@@ -14,7 +14,14 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "paths": {
-      "@iranianoralhistory/types": ["./libs/shared/types/src/index.ts"]
+      "@iranianoralhistory/types": ["./libs/shared/types/src/index.ts"],
+      "@iranianoralhistory/data-access": [
+        "./libs/client/data-access/src/index.ts"
+      ],
+      "@iranianoralhistory/validation": [
+        "./libs/shared/validation/src/index.ts"
+      ],
+      "@iranianoralhistory/prisma-db": ["./libs/prisma-db/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -1,2 +1,17 @@
-<app-nx-welcome></app-nx-welcome>
+<main>
+  <h1>{{ title }}</h1>
+
+  @if (userResource.isLoading()) {
+  <p>Loading user...</p>
+  } @else if (userResource.error(); as error) {
+  <p>Failed to load user: {{ error.message }}</p>
+  } @else if (userResource.hasValue()) {
+  <section>
+    <h2>User</h2>
+    <p><strong>ID:</strong> {{ userResource.value().id }}</p>
+    <p><strong>Name:</strong> {{ userResource.value().name }}</p>
+    <p><strong>Email:</strong> {{ userResource.value().email }}</p>
+  </section>
+  }
+</main>
 <router-outlet></router-outlet>

@@ -1,13 +1,15 @@
-import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { NxWelcome } from './nx-welcome';
+import { Component, inject } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { DataAccessService } from '@iranianoralhistory/data-access';
 
 @Component({
-  imports: [NxWelcome, RouterModule],
+  imports: [RouterOutlet],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
-  protected title = 'frontend';
+  protected readonly title = 'frontend';
+  private readonly dataAccessService = inject(DataAccessService);
+  protected readonly userResource = this.dataAccessService.userResource;
 }
