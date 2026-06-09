@@ -13,7 +13,7 @@ async function bootstrap() {
       whitelist: true
     }
   ));
-  const port = process.env.PORT || 3322;
+  const port = process.env.PORT || 3222;
   await app.listen(port);
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/`,
