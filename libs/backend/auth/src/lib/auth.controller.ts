@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Req, Res} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from '@iranianoralhistory/validation';
+import { Request, Response } from 'express';
 
 
 @Controller('auth')
@@ -12,12 +13,12 @@ export class AuthController {
     return this.authService.signup(dto);
   }
   @Post('signin')
-  async signin(@Body() dto : AuthDto, @Req() req, @Res() res) {
+  async signin(@Body() dto : AuthDto, @Req() req: Request, @Res() res: Response) {
     return this.authService.signin(dto, req, res);
   }
 
   @Get('signout')
-  async signout(@Req() req, @Res() res) {
+  async signout(@Req() req: Request, @Res() res: Response) {
     return this.authService.signout(req, res);
   } 
 }
