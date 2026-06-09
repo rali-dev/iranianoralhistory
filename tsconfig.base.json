@@ -22,8 +22,8 @@
       "@iranianoralhistory/validation": [
         "./libs/shared/validation/src/index.ts"
       ],
-      "@iranianoralhistory/prisma-db": ["./libs/prisma-db/src/index.ts"],
-      "@iranianoralhistory/auth": ["./libs/backend/auth/src/index.ts"]
+      "@iranianoralhistory/auth": ["./libs/backend/auth/src/index.ts"],
+      "@iranianoralhistory/database": ["./libs/backend/database/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

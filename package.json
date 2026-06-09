@@ -2,7 +2,11 @@
   "name": "@iranianoralhistory/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "db:migrate": "npx prisma migrate dev --schema=libs/backend/database/prisma/schema.prisma",
+    "db:generate": "npx prisma generate --schema=libs/backend/database/prisma/schema.prisma",
+    "db:studio": "npx prisma studio --schema=libs/backend/database/prisma/schema.prisma"
+  },
   "private": true,
   "devDependencies": {
     "@angular-devkit/core": "~21.2.0",
@@ -27,6 +31,7 @@
     "@nx/webpack": "22.7.5",
     "@nx/workspace": "22.7.5",
     "@playwright/test": "^1.36.0",
+    "@prisma/adapter-pg": "^7.8.0",
     "@schematics/angular": "~21.2.0",
     "@swc-node/register": "~1.11.1",
     "@swc/core": "~1.15.5",
@@ -45,6 +50,7 @@
     "jest-util": "~30.3.0",
     "nx": "22.7.5",
     "prettier": "~3.6.2",
+    "prisma": "^7.8.0",
     "ts-jest": "^29.4.0",
     "ts-node": "10.9.1",
     "tslib": "^2.3.0",
@@ -63,7 +69,9 @@
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@prisma/client": "^7.8.0",
     "axios": "^1.6.0",
+    "pg": "^8.21.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0"
   }
