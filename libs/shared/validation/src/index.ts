@@ -1,1 +1,1 @@
-export * from './lib/validation';
+export * from './lib/dto/auth.dto';
