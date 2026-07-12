@@ -12,14 +12,12 @@ test.describe('Video catalogue', () => {
   });
 
   test('shows video cards, an empty state, or an error state', async ({ page }) => {
-    const cards  = page.locator('.video-card');
-    const empty  = page.locator('.catalog-empty');
-    const errors = page.locator('.catalog-error');
-
-    const total = (await cards.count()) + (await empty.count()) + (await errors.count());
-
-    // the page must render exactly one of these three states
-    expect(total).toBeGreaterThan(0);
+    // The catalog fetch is async — wait until the page settles into one of the
+    // three terminal states (cards / empty / error) with a retrying assertion,
+    // instead of snapshotting the DOM while the request is still in flight.
+    await expect(
+      page.locator('.video-card, .catalog-empty, .catalog-error').first(),
+    ).toBeVisible({ timeout: 30000 }); // headroom for a cold lazy-chunk compile + fetch
   });
 
   test('loading spinner is gone after the page settles', async ({ page }) => {

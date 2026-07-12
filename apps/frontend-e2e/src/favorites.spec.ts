@@ -70,13 +70,12 @@ test.describe('Auth flow (register + login)', () => {
 test.describe('Video page core behaviour', () => {
   test('video page renders one of the defined states', async ({ page }) => {
     await page.goto('/videos');
-    await page.waitForLoadState('load');
 
-    const hasVideos = (await page.locator('.video-card').count()) > 0;
-    const isEmpty = (await page.locator('.catalog-empty').count()) > 0;
-    const hasError = (await page.locator('.catalog-error').count()) > 0;
-
-    expect(hasVideos || isEmpty || hasError).toBe(true);
+    // Wait for the async catalog fetch to settle into one of the three terminal
+    // states rather than snapshotting the DOM while the request is in flight.
+    await expect(
+      page.locator('.video-card, .catalog-empty, .catalog-error').first(),
+    ).toBeVisible({ timeout: 30000 }); // headroom for a cold lazy-chunk compile + fetch
   });
 
   test('no spinner visible after page has fully loaded', async ({ page }) => {
