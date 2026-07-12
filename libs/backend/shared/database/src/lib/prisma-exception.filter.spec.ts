@@ -50,11 +50,38 @@ describe('PrismaExceptionFilter', () => {
     expect(body.message.toLowerCase()).toContain('slug');
   });
 
+  it('derives an email-specific message for an email unique violation', () => {
+    const { status, body } = run(knownError('P2002', { target: ['email'] }));
+
+    expect(status).toHaveBeenCalledWith(HttpStatus.CONFLICT);
+    expect(body.message.toLowerCase()).toContain('email');
+  });
+
+  it('falls back to a generic conflict message for an unrecognised unique field', () => {
+    const { status, body } = run(knownError('P2002', { target: ['someOtherColumn'] }));
+
+    expect(status).toHaveBeenCalledWith(HttpStatus.CONFLICT);
+    expect(body.message).toBe('A record with the same unique value already exists.');
+  });
+
+  it('falls back to the generic conflict message when target is neither array nor string', () => {
+    const { body } = run(knownError('P2002', { target: undefined }));
+
+    expect(body.message).toBe('A record with the same unique value already exists.');
+  });
+
   it('maps a P2025 missing-record error to 404 Not Found', () => {
     const { status, body } = run(knownError('P2025'));
 
     expect(status).toHaveBeenCalledWith(HttpStatus.NOT_FOUND);
     expect(body.statusCode).toBe(404);
+    expect(body.message).toBe('The requested record was not found.');
+  });
+
+  it('surfaces the Prisma cause as the 404 message when present', () => {
+    const { body } = run(knownError('P2025', { cause: 'Record to update not found.' }));
+
+    expect(body.message).toBe('Record to update not found.');
   });
 
   it('maps a P2003 foreign-key error to 400 Bad Request', () => {

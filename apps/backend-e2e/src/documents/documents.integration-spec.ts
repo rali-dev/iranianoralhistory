@@ -159,4 +159,50 @@ describe('Documents (Integration)', () => {
       expect(res.status).toBe(401);
     });
   });
+
+  // ─── RBAC: authenticated non-admin (USER role) is forbidden ───────────────
+  // Document mutations are admin-only. The RolesGuard denies before the handler
+  // runs, so the docId need not exist for these 403 assertions.
+
+  describe('RBAC — authenticated non-admin', () => {
+    const userEmail = `docs-nonadmin-${Date.now()}@example.com`;
+    let userCookies: string[];
+
+    beforeAll(async () => {
+      await request(app.getHttpServer())
+        .post('/api/auth/register')
+        .send({ email: userEmail, password: testPassword });
+      const loginRes = await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email: userEmail, password: testPassword });
+      userCookies = loginRes.headers['set-cookie'] as unknown as string[];
+    });
+
+    afterAll(async () => {
+      await prisma.user.deleteMany({ where: { email: userEmail } });
+    });
+
+    it('403 on POST /api/videos/:id/documents', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/api/videos/${videoId}/documents`)
+        .set('Cookie', userCookies)
+        .send({ title: 'Nope', storagePath: 'docs/nope.pdf' });
+      expect(res.status).toBe(403);
+    });
+
+    it('403 on PATCH /api/videos/:id/documents/:docId', async () => {
+      const res = await request(app.getHttpServer())
+        .patch(`/api/videos/${videoId}/documents/00000000-0000-0000-0000-000000000000`)
+        .set('Cookie', userCookies)
+        .send({ title: 'Nope' });
+      expect(res.status).toBe(403);
+    });
+
+    it('403 on DELETE /api/videos/:id/documents/:docId', async () => {
+      const res = await request(app.getHttpServer())
+        .delete(`/api/videos/${videoId}/documents/00000000-0000-0000-0000-000000000000`)
+        .set('Cookie', userCookies);
+      expect(res.status).toBe(403);
+    });
+  });
 });

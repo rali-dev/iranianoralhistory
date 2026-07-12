@@ -110,12 +110,20 @@ export class PrismaCollectionRepository implements ICollectionRepository {
     updatedAt: Date;
     _count: { videos: number };
   }): CollectionEntity {
+    // Eine Beschreibung existiert, sobald IRGENDEIN Sprach-Feld gesetzt ist.
+    // Früher an `descDe` allein gekoppelt — dabei gingen EN/FA still verloren,
+    // wenn nur die (oft zuletzt gepflegte) deutsche Fassung fehlte.
+    const hasDescription =
+      row.descDe !== null || row.descEn !== null || row.descFa !== null;
+
     return new CollectionEntity(
       row.id,
       row.slug,
       row.type as CollectionType,
       { de: row.nameDe, en: row.nameEn, fa: row.nameFa },
-      row.descDe ? { de: row.descDe, en: row.descEn ?? '', fa: row.descFa ?? '' } : null,
+      hasDescription
+        ? { de: row.descDe ?? '', en: row.descEn ?? '', fa: row.descFa ?? '' }
+        : null,
       row.sortOrder,
       row._count.videos,
       row.createdAt,

@@ -106,7 +106,7 @@ describe('PrismaCollectionRepository', () => {
       expect(result).toBeNull();
     });
 
-    it('maps a null description when descDe is null', async () => {
+    it('maps a null description only when ALL language columns are null', async () => {
       collection.findUnique.mockResolvedValue(
         buildCollectionRow({ descDe: null, descEn: null, descFa: null }),
       );
@@ -114,6 +114,37 @@ describe('PrismaCollectionRepository', () => {
       const result = await repo.findBySlug('person-slug');
 
       expect(result?.description).toBeNull();
+    });
+
+    // Regression (Datenverlust-Bug): früher wurde die gesamte mehrsprachige
+    // Beschreibung verworfen, sobald `descDe` null/leer war — auch wenn EN/FA
+    // gepflegt waren. Jetzt bleibt jede vorhandene Sprache erhalten.
+    it('preserves EN/FA description when only descDe is null', async () => {
+      collection.findUnique.mockResolvedValue(
+        buildCollectionRow({ descDe: null, descEn: 'Description EN', descFa: 'توضیحات FA' }),
+      );
+
+      const result = await repo.findBySlug('person-slug');
+
+      expect(result?.description).toEqual({
+        de: '',
+        en: 'Description EN',
+        fa: 'توضیحات FA',
+      });
+    });
+
+    it('preserves DE/FA description when only descEn is null', async () => {
+      collection.findUnique.mockResolvedValue(
+        buildCollectionRow({ descDe: 'Beschreibung DE', descEn: null, descFa: 'توضیحات FA' }),
+      );
+
+      const result = await repo.findBySlug('person-slug');
+
+      expect(result?.description).toEqual({
+        de: 'Beschreibung DE',
+        en: '',
+        fa: 'توضیحات FA',
+      });
     });
   });
 
@@ -215,6 +246,32 @@ describe('PrismaCollectionRepository', () => {
       expect(collection.update).toHaveBeenCalledWith({
         where: { id: 'coll-uuid-1' },
         data: { descDe: null, descEn: null, descFa: null },
+        include: COUNT_INCLUDE,
+      });
+    });
+
+    // Deckt den bisher untesteten Partial-Description-Zweig ab: nur die
+    // angegebene Sprache wird gepatcht, die übrigen bleiben unangetastet.
+    it('patches only the provided description language, leaving others intact', async () => {
+      collection.update.mockResolvedValue(buildCollectionRow());
+
+      await repo.update('coll-uuid-1', { description: { en: 'Only EN changed' } });
+
+      expect(collection.update).toHaveBeenCalledWith({
+        where: { id: 'coll-uuid-1' },
+        data: { descEn: 'Only EN changed' },
+        include: COUNT_INCLUDE,
+      });
+    });
+
+    it('updates individual name languages independently', async () => {
+      collection.update.mockResolvedValue(buildCollectionRow());
+
+      await repo.update('coll-uuid-1', { name: { en: 'New EN', fa: 'نام جدید' } });
+
+      expect(collection.update).toHaveBeenCalledWith({
+        where: { id: 'coll-uuid-1' },
+        data: { nameEn: 'New EN', nameFa: 'نام جدید' },
         include: COUNT_INCLUDE,
       });
     });

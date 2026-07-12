@@ -245,5 +245,53 @@ describe('Videos (Integration)', () => {
 
       expect(res.status).toBe(403);
     });
+
+    it('returns 403 on PATCH /api/videos/:id for a logged-in non-admin', async () => {
+      const res = await request(app.getHttpServer())
+        .patch(`/api/videos/${createdVideoId}`)
+        .set('Cookie', userCookies)
+        .send({ title: { de: 'X', en: 'X', fa: 'X' } });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('returns 403 on DELETE /api/videos/:id for a logged-in non-admin', async () => {
+      const res = await request(app.getHttpServer())
+        .delete(`/api/videos/${createdVideoId}`)
+        .set('Cookie', userCookies);
+
+      expect(res.status).toBe(403);
+    });
+  });
+
+  // ─── DELETE /api/videos/:id (happy path) ──────────────────────────────────
+  // Uses a throwaway video so the shared fixtures are untouched.
+
+  describe('DELETE /api/videos/:id', () => {
+    it('deletes a video as admin (204) and it is gone afterwards', async () => {
+      const created = await request(app.getHttpServer())
+        .post('/api/videos')
+        .set('Cookie', authCookies)
+        .send({
+          vimeoId: `${Date.now()}`,
+          title: { de: 'Zu löschen', en: 'To delete', fa: 'برای حذف' },
+        });
+      expect(created.status).toBe(201);
+
+      const del = await request(app.getHttpServer())
+        .delete(`/api/videos/${created.body.id}`)
+        .set('Cookie', authCookies);
+      expect(del.status).toBe(204);
+
+      const after = await request(app.getHttpServer()).get(`/api/videos/${created.body.id}`);
+      expect(after.status).toBe(404);
+    });
+
+    it('returns 401 without authentication', async () => {
+      const res = await request(app.getHttpServer())
+        .delete(`/api/videos/${createdVideoId}`);
+
+      expect(res.status).toBe(401);
+    });
   });
 });

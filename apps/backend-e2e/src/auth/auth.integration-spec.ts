@@ -1,13 +1,14 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { PrismaService } from '@iranianoralhistory/backend-shared-database';
-import { createTestApp } from '../support/app-helper';
+import { createTestApp, SentResetCode } from '../support/app-helper';
 
 jest.setTimeout(30000);
 
 describe('Auth (Integration)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
+  let sentResetCodes: SentResetCode[];
 
   // unique email per test run — prevents conflicts on re-runs
   const testEmail = `auth-test-${Date.now()}@example.com`;
@@ -16,7 +17,7 @@ describe('Auth (Integration)', () => {
   let accessCookies: string[];
 
   beforeAll(async () => {
-    ({ app, prisma } = await createTestApp());
+    ({ app, prisma, sentResetCodes } = await createTestApp());
   });
 
   afterAll(async () => {
@@ -151,6 +152,94 @@ describe('Auth (Integration)', () => {
         .set('Cookie', accessCookies);
 
       expect(res.status).toBe(401);
+    });
+  });
+
+  // ─── Password Reset Flow ──────────────────────────────────────────────────
+  // Exercises forgot-password → verify-reset-code → reset-password end-to-end.
+  // The 6-digit code is normally only delivered by e-mail; the test app's
+  // EMAIL_SERVICE override (see app-helper) captures it, making the flow testable.
+
+  describe('Password reset flow', () => {
+    const resetEmail = `reset-test-${Date.now()}@example.com`;
+    const oldPassword = 'OldPass123!';
+    const newPassword = 'NewPass456!';
+    let resetCode: string;
+
+    beforeAll(async () => {
+      await request(app.getHttpServer())
+        .post('/api/auth/register')
+        .send({ email: resetEmail, password: oldPassword });
+    });
+
+    afterAll(async () => {
+      await prisma.user.deleteMany({ where: { email: resetEmail } });
+    });
+
+    it('POST /api/auth/forgot-password returns 200 and issues a 6-digit code', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/auth/forgot-password')
+        .send({ email: resetEmail });
+
+      expect(res.status).toBe(200);
+      const entry = sentResetCodes.find((c) => c.to === resetEmail);
+      expect(entry).toBeDefined();
+      expect(entry?.code).toMatch(/^\d{6}$/);
+      resetCode = entry?.code as string;
+    });
+
+    it('does not disclose unknown emails (still 200, no code issued)', async () => {
+      const unknownEmail = `nobody-${Date.now()}@example.com`;
+      const res = await request(app.getHttpServer())
+        .post('/api/auth/forgot-password')
+        .send({ email: unknownEmail });
+
+      expect(res.status).toBe(200);
+      expect(sentResetCodes.some((c) => c.to === unknownEmail)).toBe(false);
+    });
+
+    it('POST /api/auth/verify-reset-code rejects a wrong code with 400', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/auth/verify-reset-code')
+        .send({ email: resetEmail, code: '000000' });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('POST /api/auth/verify-reset-code accepts the correct code with 200', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/auth/verify-reset-code')
+        .send({ email: resetEmail, code: resetCode });
+
+      expect(res.status).toBe(200);
+    });
+
+    it('POST /api/auth/reset-password sets the new password with 200', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/auth/reset-password')
+        .send({ email: resetEmail, code: resetCode, newPassword });
+
+      expect(res.status).toBe(200);
+    });
+
+    it('the new password authenticates and the old one is rejected', async () => {
+      const good = await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email: resetEmail, password: newPassword });
+      expect(good.status).toBe(200);
+
+      const bad = await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email: resetEmail, password: oldPassword });
+      expect(bad.status).toBe(401);
+    });
+
+    it('the reset code is single-use — reusing it after reset returns 400', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/auth/reset-password')
+        .send({ email: resetEmail, code: resetCode, newPassword: 'Another789!' });
+
+      expect(res.status).toBe(400);
     });
   });
 });

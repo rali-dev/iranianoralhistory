@@ -207,5 +207,83 @@ describe('Collections (Integration)', () => {
 
       expect(res.status).toBe(401);
     });
+
+    it('deletes a collection as admin (204)', async () => {
+      // throwaway collection so shared fixtures stay intact
+      const created = await request(app.getHttpServer())
+        .post('/api/collections')
+        .set('Cookie', adminCookies)
+        .send({
+          slug: `throwaway-${Date.now()}`,
+          type: 'TOPIC',
+          name: { de: 'Wegwerf', en: 'Throwaway', fa: 'یکبارمصرف' },
+        });
+      expect(created.status).toBe(201);
+
+      const del = await request(app.getHttpServer())
+        .delete(`/api/collections/${created.body.id}`)
+        .set('Cookie', adminCookies);
+
+      expect(del.status).toBe(204);
+    });
+  });
+
+  // ─── RBAC: authenticated non-admin (USER role) is forbidden ───────────────
+  // Every collection mutation is admin-only; a logged-in USER must get 403.
+
+  describe('RBAC — authenticated non-admin', () => {
+    const userEmail = `collection-nonadmin-${Date.now()}@example.com`;
+    let userCookies: string[];
+
+    beforeAll(async () => {
+      await request(app.getHttpServer())
+        .post('/api/auth/register')
+        .send({ email: userEmail, password: testPassword });
+      const loginRes = await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email: userEmail, password: testPassword });
+      userCookies = loginRes.headers['set-cookie'] as unknown as string[];
+    });
+
+    afterAll(async () => {
+      await prisma.user.deleteMany({ where: { email: userEmail } });
+    });
+
+    it('403 on POST /api/collections', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/collections')
+        .set('Cookie', userCookies)
+        .send({ slug: `x-${Date.now()}`, type: 'TOPIC', name: { de: 'X', en: 'X', fa: 'X' } });
+      expect(res.status).toBe(403);
+    });
+
+    it('403 on PATCH /api/collections/:id', async () => {
+      const res = await request(app.getHttpServer())
+        .patch(`/api/collections/${createdCollectionId}`)
+        .set('Cookie', userCookies)
+        .send({ sortOrder: 1 });
+      expect(res.status).toBe(403);
+    });
+
+    it('403 on DELETE /api/collections/:id', async () => {
+      const res = await request(app.getHttpServer())
+        .delete(`/api/collections/${createdCollectionId}`)
+        .set('Cookie', userCookies);
+      expect(res.status).toBe(403);
+    });
+
+    it('403 on POST /api/collections/:id/videos/:videoId', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/api/collections/${createdCollectionId}/videos/${createdVideoId}`)
+        .set('Cookie', userCookies);
+      expect(res.status).toBe(403);
+    });
+
+    it('403 on DELETE /api/collections/:id/videos/:videoId', async () => {
+      const res = await request(app.getHttpServer())
+        .delete(`/api/collections/${createdCollectionId}/videos/${createdVideoId}`)
+        .set('Cookie', userCookies);
+      expect(res.status).toBe(403);
+    });
   });
 });

@@ -1,6 +1,7 @@
 import { de } from './de';
 import { en } from './en';
 import { fa } from './fa';
+import { KNOWN_INCOMPLETE_TRANSLATION_KEYS } from './incomplete-translations.baseline';
 
 /**
  * A translation node is either a leaf (string) or a nested object of nodes.
@@ -104,4 +105,52 @@ describe('translation leaf values', () => {
       expect(nonStringKeys).toEqual([]);
     });
   }
+});
+
+/**
+ * Cross-language completeness ratchet.
+ *
+ * The parity checks above prove the three languages share the same KEYS, but a
+ * key can still be a blank string in one language while filled in another — that
+ * is exactly the defect that leaves ~30 % of the German/English UI empty. Deep
+ * value-equality is deliberately NOT asserted (translations must differ), but a
+ * key that is filled somewhere and blank elsewhere is a genuine content gap.
+ *
+ * We freeze the current gap set in `incomplete-translations.baseline.ts` so the
+ * suite stays green today, and ratchet from there: no NEW gap may appear, and a
+ * key that gets filled must be removed from the baseline. See that file.
+ */
+describe('translation completeness (cross-language)', () => {
+  const deMap = Object.fromEntries(flattenEntries(de));
+  const enMap = Object.fromEntries(flattenEntries(en));
+  const faMap = Object.fromEntries(flattenEntries(fa));
+  const allKeys = flattenKeys(de);
+
+  const isBlank = (value: TranslationNode | undefined): boolean =>
+    value === undefined || value === null || value === '';
+
+  // A key is "incomplete" when it is filled in at least one language and blank
+  // in at least one other.
+  const incompleteKeys = allKeys
+    .filter((key) => {
+      const values = [deMap[key], enMap[key], faMap[key]];
+      return values.some(isBlank) && values.some((v) => !isBlank(v));
+    })
+    .sort();
+
+  const baseline = new Set(KNOWN_INCOMPLETE_TRANSLATION_KEYS);
+
+  it('introduces no NEW cross-language gap beyond the frozen baseline', () => {
+    const newlyIncomplete = incompleteKeys.filter((key) => !baseline.has(key));
+    // If this fails: a translation key is now filled in one language but blank
+    // in another. Fill all three languages (or add it to the baseline knowingly).
+    expect(newlyIncomplete).toEqual([]);
+  });
+
+  it('keeps the baseline honest — no already-completed key may linger in it', () => {
+    const staleBaseline = [...baseline].filter((key) => !incompleteKeys.includes(key)).sort();
+    // If this fails: a key listed as incomplete is now complete. Remove it from
+    // incomplete-translations.baseline.ts so the debt register shrinks to zero.
+    expect(staleBaseline).toEqual([]);
+  });
 });

@@ -6,7 +6,7 @@ const mockUser = { id: 'user-uuid', email: 'test@example.com' };
 const futureDate = new Date(Date.now() + 10 * 60 * 1000);
 const pastDate = new Date(Date.now() - 1000);
 
-const mockUserRepo = { findByEmail: jest.fn(), findById: jest.fn(), save: jest.fn(), updatePassword: jest.fn(), updateRefreshToken: jest.fn() };
+const mockUserRepo = { findByEmail: jest.fn(), findById: jest.fn(), create: jest.fn(), updatePassword: jest.fn(), updateRefreshToken: jest.fn() };
 const mockResetRepo = { findByUserId: jest.fn(), upsert: jest.fn(), deleteByUserId: jest.fn() };
 const mockPasswordHasher = { hash: jest.fn(), compare: jest.fn() };
 
@@ -45,6 +45,34 @@ describe('ResetPasswordHandler', () => {
     ).rejects.toThrow(BadRequestException);
 
     expect(mockUserRepo.updatePassword).not.toHaveBeenCalled();
+  });
+
+  it('throws BadRequestException when no reset record exists (null record)', async () => {
+    mockUserRepo.findByEmail.mockResolvedValue(mockUser);
+    mockResetRepo.findByUserId.mockResolvedValue(null);
+
+    await expect(
+      handler.execute(new ResetPasswordCommand({ email: 'test@example.com', code: '123456', newPassword: 'NewPass1!' })),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(mockPasswordHasher.compare).not.toHaveBeenCalled();
+    expect(mockResetRepo.deleteByUserId).not.toHaveBeenCalled();
+    expect(mockUserRepo.updatePassword).not.toHaveBeenCalled();
+  });
+
+  it('invalidates the reset token BEFORE updating the password (no reuse window)', async () => {
+    mockUserRepo.findByEmail.mockResolvedValue(mockUser);
+    mockResetRepo.findByUserId.mockResolvedValue({ tokenHash: 'hash', expiresAt: futureDate });
+    mockPasswordHasher.compare.mockResolvedValue(true);
+    mockPasswordHasher.hash.mockResolvedValue('new-hashed-password');
+
+    await handler.execute(
+      new ResetPasswordCommand({ email: 'test@example.com', code: '123456', newPassword: 'NewPass1!' }),
+    );
+
+    const deleteOrder = mockResetRepo.deleteByUserId.mock.invocationCallOrder[0];
+    const updateOrder = mockUserRepo.updatePassword.mock.invocationCallOrder[0];
+    expect(deleteOrder).toBeLessThan(updateOrder);
   });
 
   it('throws BadRequestException when the reset record has expired', async () => {

@@ -1,4 +1,5 @@
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { VideoTranslationDto, OptionalVideoTranslationDto } from './video.dto';
 import { CollectionType } from '../interfaces/collection.interface';
 
@@ -11,9 +12,13 @@ export class CreateCollectionDto {
   type!: CollectionType;
 
   @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => VideoTranslationDto)
   name!: VideoTranslationDto;
 
   @IsOptional()
+  @ValidateNested()
+  @Type(() => VideoTranslationDto)
   description?: VideoTranslationDto;
 
   @IsOptional()
@@ -28,9 +33,13 @@ export class UpdateCollectionDto {
   slug?: string;
 
   @IsOptional()
+  @ValidateNested()
+  @Type(() => OptionalVideoTranslationDto)
   name?: OptionalVideoTranslationDto;
 
   @IsOptional()
+  @ValidateNested()
+  @Type(() => OptionalVideoTranslationDto)
   description?: OptionalVideoTranslationDto | null;
 
   @IsOptional()
