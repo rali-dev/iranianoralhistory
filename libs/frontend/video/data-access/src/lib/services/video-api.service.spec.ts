@@ -123,6 +123,18 @@ describe('VideoApiService', () => {
     });
   });
 
+  describe('updateDocument()', () => {
+    it('sends PATCH to /api/videos/:videoId/documents/:docId with body and withCredentials', () => {
+      service.updateDocument('video-uuid', 'doc-uuid', { title: 'Renamed' }).subscribe();
+
+      const req = http.expectOne('/api/videos/video-uuid/documents/doc-uuid');
+      expect(req.request.method).toBe('PATCH');
+      expect(req.request.body).toEqual({ title: 'Renamed' });
+      expect(req.request.withCredentials).toBe(true);
+      req.flush({ id: 'doc-uuid', title: 'Renamed' });
+    });
+  });
+
   describe('deleteDocument()', () => {
     it('sends DELETE to /api/videos/:videoId/documents/:docId', () => {
       service.deleteDocument('video-uuid', 'doc-uuid').subscribe();

@@ -25,4 +25,16 @@ describe('mustExist()', () => {
     const result = await mustExist(Promise.resolve(arr), 'List', 'list-id');
     expect(result).toBe(arr);
   });
+
+  it('returns a legitimately falsy value (0 / empty string / false) instead of throwing', async () => {
+    await expect(mustExist(Promise.resolve(0), 'Count', 'c')).resolves.toBe(0);
+    await expect(mustExist(Promise.resolve(''), 'Name', 'n')).resolves.toBe('');
+    await expect(mustExist(Promise.resolve(false), 'Flag', 'f')).resolves.toBe(false);
+  });
+
+  it('still throws for undefined (not only null)', async () => {
+    await expect(
+      mustExist(Promise.resolve(undefined as unknown as null), 'Video', 'u'),
+    ).rejects.toThrow(NotFoundException);
+  });
 });
