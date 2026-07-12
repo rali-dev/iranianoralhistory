@@ -56,4 +56,11 @@ export function validateEnv(): void {
   if (jwtSecret === jwtRefreshSecret) {
     throw new Error('[env] JWT_SECRET und JWT_REFRESH_SECRET müssen unterschiedlich sein.');
   }
+
+  // Supabase-Storage- und Resend-Mail-Zugang: müssen vorhanden sein.
+  // RESEND_FROM_ADDRESS (Default) und PORT (optional) bleiben absichtlich ungeprüft.
+  requireEnv('SUPABASE_URL');
+  requireEnv('SUPABASE_SECRET_KEY');
+  requireEnv('SUPABASE_BUCKET');
+  requireEnv('RESEND_API_KEY');
 }

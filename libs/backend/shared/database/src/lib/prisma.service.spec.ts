@@ -1,4 +1,14 @@
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from './prisma.service';
+
+const fakeConfig = {
+  get: (k: string) => process.env[k],
+  getOrThrow: (k: string) => {
+    const v = process.env[k];
+    if (v === undefined) throw new Error(`Missing ${k}`);
+    return v;
+  },
+} as unknown as ConfigService;
 
 jest.mock('@prisma/adapter-pg', () => ({
   PrismaPg: jest.fn().mockImplementation(() => ({})),
@@ -19,7 +29,7 @@ describe('PrismaService', () => {
 
   beforeEach(() => {
     process.env['DATABASE_URL'] = 'postgresql://test:test@localhost:5432/test';
-    service = new PrismaService();
+    service = new PrismaService(fakeConfig);
   });
 
   afterEach(() => {
@@ -43,20 +53,18 @@ describe('PrismaService', () => {
     expect((service as any).$disconnect).toHaveBeenCalledTimes(1);
   });
 
-  it('uses empty string as connectionString when DATABASE_URL is not set', () => {
+  it('throws when DATABASE_URL is not set', () => {
     delete process.env['DATABASE_URL'];
-    const { PrismaPg } = jest.requireMock('@prisma/adapter-pg');
 
-    new PrismaService();
-
-    expect(PrismaPg).toHaveBeenCalledWith({ connectionString: '' });
+    // getOrThrow fails fast instead of silently falling back to an empty string.
+    expect(() => new PrismaService(fakeConfig)).toThrow(/DATABASE_URL/);
   });
 
   it('uses DATABASE_URL as connectionString when set', () => {
     process.env['DATABASE_URL'] = 'postgresql://user:pass@host:5432/db';
     const { PrismaPg } = jest.requireMock('@prisma/adapter-pg');
 
-    new PrismaService();
+    new PrismaService(fakeConfig);
 
     expect(PrismaPg).toHaveBeenCalledWith({
       connectionString: 'postgresql://user:pass@host:5432/db',

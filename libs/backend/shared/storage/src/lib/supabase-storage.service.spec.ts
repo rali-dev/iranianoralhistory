@@ -1,5 +1,15 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SupabaseStorageService } from './supabase-storage.service';
+
+const fakeConfig = {
+  get: (k: string) => process.env[k],
+  getOrThrow: (k: string) => {
+    const v = process.env[k];
+    if (v === undefined) throw new Error(`Missing ${k}`);
+    return v;
+  },
+} as unknown as ConfigService;
 
 const mockCreateSignedUrl = jest.fn();
 const mockStorage = {
@@ -16,7 +26,7 @@ function buildService(overrides: Partial<Record<string, string>> = {}): Supabase
   process.env['SUPABASE_SECRET_KEY'] = overrides['SUPABASE_SECRET_KEY'] ?? 'secret-key';
   process.env['SUPABASE_BUCKET'] = overrides['SUPABASE_BUCKET'] ?? 'test-bucket';
 
-  const service = new SupabaseStorageService();
+  const service = new SupabaseStorageService(fakeConfig);
   service.onModuleInit();
   return service;
 }
@@ -42,10 +52,8 @@ describe('SupabaseStorageService', () => {
       process.env['SUPABASE_BUCKET'] = 'bucket';
       delete process.env['SUPABASE_URL'];
 
-      const service = new SupabaseStorageService();
-      expect(() => service.onModuleInit()).toThrow(
-        'Fehlende Supabase-Konfiguration',
-      );
+      const service = new SupabaseStorageService(fakeConfig);
+      expect(() => service.onModuleInit()).toThrow(/SUPABASE_URL/);
     });
 
     it('throws when SUPABASE_SECRET_KEY is missing', () => {
@@ -53,10 +61,8 @@ describe('SupabaseStorageService', () => {
       process.env['SUPABASE_BUCKET'] = 'bucket';
       delete process.env['SUPABASE_SECRET_KEY'];
 
-      const service = new SupabaseStorageService();
-      expect(() => service.onModuleInit()).toThrow(
-        'Fehlende Supabase-Konfiguration',
-      );
+      const service = new SupabaseStorageService(fakeConfig);
+      expect(() => service.onModuleInit()).toThrow(/SUPABASE_SECRET_KEY/);
     });
 
     it('throws when SUPABASE_BUCKET is missing', () => {
@@ -64,10 +70,8 @@ describe('SupabaseStorageService', () => {
       process.env['SUPABASE_SECRET_KEY'] = 'key';
       delete process.env['SUPABASE_BUCKET'];
 
-      const service = new SupabaseStorageService();
-      expect(() => service.onModuleInit()).toThrow(
-        'Fehlende Supabase-Konfiguration',
-      );
+      const service = new SupabaseStorageService(fakeConfig);
+      expect(() => service.onModuleInit()).toThrow(/SUPABASE_BUCKET/);
     });
 
     it('creates the Supabase client with correct options', () => {

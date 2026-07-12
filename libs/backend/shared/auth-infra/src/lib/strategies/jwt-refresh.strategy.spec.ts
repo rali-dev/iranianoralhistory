@@ -1,6 +1,16 @@
 import { Request } from 'express';
+import { ConfigService } from '@nestjs/config';
 import { IRefreshJwtPayload } from '@iranianoralhistory/shared-contracts';
 import { JwtRefreshStrategy } from './jwt-refresh.strategy';
+
+const fakeConfig = {
+  get: (k: string) => process.env[k],
+  getOrThrow: (k: string) => {
+    const v = process.env[k];
+    if (v === undefined) throw new Error(`Missing ${k}`);
+    return v;
+  },
+} as unknown as ConfigService;
 
 const TEST_PAYLOAD: IRefreshJwtPayload = {
   id: 'user-uuid',
@@ -25,21 +35,19 @@ describe('JwtRefreshStrategy', () => {
 
   describe('constructor', () => {
     it('is defined when JWT_REFRESH_SECRET is set', () => {
-      expect(new JwtRefreshStrategy()).toBeDefined();
+      expect(new JwtRefreshStrategy(fakeConfig)).toBeDefined();
     });
 
     it('throws when JWT_REFRESH_SECRET is not set', () => {
       delete process.env['JWT_REFRESH_SECRET'];
 
-      expect(() => new JwtRefreshStrategy()).toThrow(
-        'JWT_REFRESH_SECRET environment variable is not set.',
-      );
+      expect(() => new JwtRefreshStrategy(fakeConfig)).toThrow(/JWT_REFRESH_SECRET/);
     });
   });
 
   describe('validate()', () => {
     it('returns the payload with the refresh token taken from the cookie', async () => {
-      const strategy = new JwtRefreshStrategy();
+      const strategy = new JwtRefreshStrategy(fakeConfig);
       const req = {
         cookies: { refresh_token: 'refresh-cookie-token' },
       } as unknown as Request;
@@ -51,7 +59,7 @@ describe('JwtRefreshStrategy', () => {
     });
 
     it('returns an undefined refresh token when the cookie is absent', async () => {
-      const strategy = new JwtRefreshStrategy();
+      const strategy = new JwtRefreshStrategy(fakeConfig);
       const req = { cookies: {} } as unknown as Request;
 
       await expect(strategy.validate(req, TEST_PAYLOAD)).resolves.toEqual({

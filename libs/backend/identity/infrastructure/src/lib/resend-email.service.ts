@@ -1,12 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 import { IEmailService } from '@iranianoralhistory/backend-identity-domain';
 
 @Injectable()
 export class ResendEmailService implements IEmailService {
   private readonly logger = new Logger(ResendEmailService.name);
-  private readonly resend = new Resend(process.env['RESEND_API_KEY'] ?? '');
-  private readonly fromAddress = process.env['RESEND_FROM_ADDRESS'] ?? 'onboarding@resend.dev';
+  private readonly resend: Resend;
+  private readonly fromAddress: string;
+
+  constructor(private readonly config: ConfigService) {
+    this.resend = new Resend(config.getOrThrow<string>('RESEND_API_KEY'));
+    this.fromAddress = config.get<string>('RESEND_FROM_ADDRESS') ?? 'onboarding@resend.dev';
+  }
 
   async sendPasswordResetCode(to: string, code: string): Promise<void> {
     const { error } = await this.resend.emails.send({

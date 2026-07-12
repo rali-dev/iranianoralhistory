@@ -210,4 +210,40 @@ describe('Videos (Integration)', () => {
       expect(res.body.vimeoId).toBe('111222333');
     });
   });
+
+  // ─── RBAC: authenticated non-admin (USER role) is forbidden ───────────────
+  // Exercises the full JwtAuthGuard → RolesGuard chain: a logged-in USER (valid
+  // cookie) without the ADMIN role must get 403, not 401.
+
+  describe('RBAC — authenticated non-admin', () => {
+    const userEmail = `video-nonadmin-${Date.now()}@example.com`;
+    let userCookies: string[];
+
+    beforeAll(async () => {
+      await request(app.getHttpServer())
+        .post('/api/auth/register')
+        .send({ email: userEmail, password: testPassword });
+      // deliberately NOT promoted to ADMIN — stays a normal USER
+      const loginRes = await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email: userEmail, password: testPassword });
+      userCookies = loginRes.headers['set-cookie'] as unknown as string[];
+    });
+
+    afterAll(async () => {
+      await prisma.user.deleteMany({ where: { email: userEmail } });
+    });
+
+    it('returns 403 on POST /api/videos (admin-only) for a logged-in non-admin', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/videos')
+        .set('Cookie', userCookies)
+        .send({
+          vimeoId: '555000555',
+          title: { de: 'Verboten', en: 'Forbidden', fa: 'ممنوع' },
+        });
+
+      expect(res.status).toBe(403);
+    });
+  });
 });

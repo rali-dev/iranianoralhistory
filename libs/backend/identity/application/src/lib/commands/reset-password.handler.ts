@@ -34,7 +34,12 @@ export class ResetPasswordHandler
     if (!match) throw invalid();
 
     const hashedPassword = await this.passwordHasher.hash(command.dto.newPassword);
-    await this.userRepo.updatePassword(user.id, hashedPassword);
+
+    // Reset-Token ZUERST invalidieren, dann das neue Passwort setzen. So kann
+    // ein Fehler zwischen den beiden Writes nie ein noch gültiges Token neben
+    // einem bereits geänderten Passwort hinterlassen (kein Reuse-Risiko).
+    // Hinweis: echte DB-Atomarität beider Writes wäre ein Unit-of-Work-Schritt.
     await this.resetRepo.deleteByUserId(user.id);
+    await this.userRepo.updatePassword(user.id, hashedPassword);
   }
 }

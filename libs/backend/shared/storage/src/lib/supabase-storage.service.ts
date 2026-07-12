@@ -1,4 +1,5 @@
 import { Injectable, InternalServerErrorException, Logger, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { IStorageService } from './storage.service.interface';
 
@@ -8,16 +9,12 @@ export class SupabaseStorageService implements IStorageService, OnModuleInit {
   private client!: SupabaseClient;
   private bucket!: string;
 
-  onModuleInit(): void {
-    const url = process.env['SUPABASE_URL'];
-    const key = process.env['SUPABASE_SECRET_KEY'];
-    const bucket = process.env['SUPABASE_BUCKET'];
+  constructor(private readonly config: ConfigService) {}
 
-    if (!url || !key || !bucket) {
-      throw new Error(
-        'Fehlende Supabase-Konfiguration: SUPABASE_URL, SUPABASE_SECRET_KEY und SUPABASE_BUCKET müssen gesetzt sein.',
-      );
-    }
+  onModuleInit(): void {
+    const url = this.config.getOrThrow<string>('SUPABASE_URL');
+    const key = this.config.getOrThrow<string>('SUPABASE_SECRET_KEY');
+    const bucket = this.config.getOrThrow<string>('SUPABASE_BUCKET');
 
     this.client = createClient(url, key, {
       auth: { persistSession: false, autoRefreshToken: false },

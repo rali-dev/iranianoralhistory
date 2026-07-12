@@ -1,6 +1,16 @@
 import { Request } from 'express';
+import { ConfigService } from '@nestjs/config';
 import { IJwtPayload } from '@iranianoralhistory/shared-contracts';
 import { JwtStrategy } from './jwt.strategy';
+
+const fakeConfig = {
+  get: (k: string) => process.env[k],
+  getOrThrow: (k: string) => {
+    const v = process.env[k];
+    if (v === undefined) throw new Error(`Missing ${k}`);
+    return v;
+  },
+} as unknown as ConfigService;
 
 const TEST_PAYLOAD: IJwtPayload = {
   id: 'user-uuid',
@@ -25,21 +35,19 @@ describe('JwtStrategy', () => {
 
   describe('constructor', () => {
     it('is defined when JWT_SECRET is set', () => {
-      expect(new JwtStrategy()).toBeDefined();
+      expect(new JwtStrategy(fakeConfig)).toBeDefined();
     });
 
     it('throws when JWT_SECRET is not set', () => {
       delete process.env['JWT_SECRET'];
 
-      expect(() => new JwtStrategy()).toThrow(
-        'JWT_SECRET environment variable is not set.',
-      );
+      expect(() => new JwtStrategy(fakeConfig)).toThrow(/JWT_SECRET/);
     });
   });
 
   describe('validate()', () => {
     it('returns the JWT payload unchanged', async () => {
-      const strategy = new JwtStrategy();
+      const strategy = new JwtStrategy(fakeConfig);
 
       await expect(strategy.validate(TEST_PAYLOAD)).resolves.toEqual(TEST_PAYLOAD);
     });

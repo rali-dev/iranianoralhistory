@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -15,6 +16,10 @@ import { BackendFavoriteAdaptersModule } from '@iranianoralhistory/backend-favor
 
 @Module({
   imports: [
+    // Zentrale Konfiguration: liest .env, global injizierbar via ConfigService.
+    // Kein validate() hier — die Fail-fast-Prüfung bleibt in main.ts (validateEnv),
+    // damit Tests das AppModule mit partieller Env booten können.
+    ConfigModule.forRoot({ isGlobal: true, cache: true }),
     EventEmitterModule.forRoot(),
     // Globales Rate-Limiting: 100 Requests pro Minute je IP (bremst Brute-Force /
     // Credential-Stuffing). Sensible Endpunkte können per @Throttle() verschärft werden.

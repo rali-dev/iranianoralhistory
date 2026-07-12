@@ -4,7 +4,7 @@
   style="
     background: radial-gradient(
       ellipse 70% 60% at 50% 0%,
-      rgba(127, 0, 0, 0.05) 0%,
+      color-mix(in srgb, var(--accent) 5%, transparent) 0%,
       transparent 60%
     );
   "
@@ -31,15 +31,15 @@
         <!-- Breadcrumb: section indicator -->
         <a
           routerLink="/about"
-          class="inline-flex items-center gap-[0.5rem] mb-3 group focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px] rounded-[2px]"
+          class="inline-flex items-center gap-[0.5rem] mb-3 group focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[2px] rounded-[2px]"
           aria-label="بازگشت به بخش از تجربه پراگ"
         >
           <span
-            class="flex-shrink-0 w-[3px] h-[14px] rounded-[2px] bg-[#7F0000]"
+            class="flex-shrink-0 w-[3px] h-[14px] rounded-[2px] bg-[var(--accent)]"
             aria-hidden="true"
           ></span>
           <span
-            class="font-[family-name:var(--font-fa)] text-[0.9rem] font-[500] text-[#7F0000] tracking-normal group-hover:text-[#A30000] transition-colors duration-200"
+            class="font-[family-name:var(--font-fa)] text-[0.9rem] font-[500] text-[var(--accent)] tracking-normal group-hover:text-[var(--accent-light)] transition-colors duration-200"
           >
             از تجربه پراگ
           </span>
@@ -50,7 +50,7 @@
         >
           متن کامل نامه غنی بلوریان به حزب کمونیست شوروی
         </h1>
-        <div class="w-12 h-[2px] bg-[#7F0000]" aria-hidden="true"></div>
+        <div class="w-12 h-[2px] bg-[var(--accent)]" aria-hidden="true"></div>
       </div>
     </div>
   </header>
@@ -188,12 +188,12 @@
         </p>
         <ul class="list-none m-0 p-0 flex flex-col gap-[0.25rem]">
           <li
-            class="flex items-baseline gap-[0.625rem] font-[family-name:var(--font-fa)] text-[0.9rem] font-normal text-[var(--text-secondary)] leading-[2] before:content-[''] before:flex-shrink-0 before:w-1 before:h-1 before:bg-[#7F0000] before:rounded-full before:mt-[0.15em]"
+            class="flex items-baseline gap-[0.625rem] font-[family-name:var(--font-fa)] text-[0.9rem] font-normal text-[var(--text-secondary)] leading-[2] before:content-[''] before:flex-shrink-0 before:w-1 before:h-1 before:bg-[var(--accent)] before:rounded-full before:mt-[0.15em]"
           >
             حزب سوسیالیست متحده آلمان (روابط بین المللی بخش خاورمیانه)
           </li>
           <li
-            class="flex items-baseline gap-[0.625rem] font-[family-name:var(--font-fa)] text-[0.9rem] font-normal text-[var(--text-secondary)] leading-[2] before:content-[''] before:flex-shrink-0 before:w-1 before:h-1 before:bg-[#7F0000] before:rounded-full before:mt-[0.15em]"
+            class="flex items-baseline gap-[0.625rem] font-[family-name:var(--font-fa)] text-[0.9rem] font-normal text-[var(--text-secondary)] leading-[2] before:content-[''] before:flex-shrink-0 before:w-1 before:h-1 before:bg-[var(--accent)] before:rounded-full before:mt-[0.15em]"
           >
             حزب کمونیست چکسلواکی (روابط بین الملل - بخش خاورمیانه)
           </li>
@@ -233,7 +233,7 @@
       <div class="mt-14 pt-8 border-t border-[var(--border)]">
         <a
           routerLink="/about"
-          class="inline-flex items-center gap-2 font-[family-name:var(--font-fa)] text-[0.9rem] font-[500] text-[#7F0000] no-underline transition-colors duration-200 hover:text-[#A30000] focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px] rounded-[2px]"
+          class="inline-flex items-center gap-2 font-[family-name:var(--font-fa)] text-[0.9rem] font-[500] text-[var(--accent)] no-underline transition-colors duration-200 hover:text-[var(--accent-light)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[2px] rounded-[2px]"
         >
           <span aria-hidden="true">←</span>
           بازگشت به صفحه درباره RAIOH

@@ -1,19 +1,16 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { IRefreshJwtPayload } from '@iranianoralhistory/shared-contracts';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
-  constructor() {
-    const secret = process.env['JWT_REFRESH_SECRET'];
-    if (!secret) {
-      throw new Error('JWT_REFRESH_SECRET environment variable is not set.');
-    }
+  constructor(config: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([JwtRefreshStrategy.extractFromCookie]),
-      secretOrKey: secret,
+      secretOrKey: config.getOrThrow<string>('JWT_REFRESH_SECRET'),
       passReqToCallback: true,
       ignoreExpiration: false,
     });

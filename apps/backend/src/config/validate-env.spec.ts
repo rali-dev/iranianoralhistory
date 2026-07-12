@@ -10,6 +10,10 @@ describe('validateEnv()', () => {
     process.env['DATABASE_URL'] = 'postgresql://user:pass@localhost:5432/db';
     process.env['JWT_SECRET'] = STRONG_A;
     process.env['JWT_REFRESH_SECRET'] = STRONG_B;
+    process.env['SUPABASE_URL'] = 'https://test.supabase.co';
+    process.env['SUPABASE_SECRET_KEY'] = 'supabase-secret-key';
+    process.env['SUPABASE_BUCKET'] = 'test-bucket';
+    process.env['RESEND_API_KEY'] = 're_test_key';
   });
 
   afterEach(() => {
@@ -43,5 +47,15 @@ describe('validateEnv()', () => {
   it('rejects identical access and refresh secrets', () => {
     process.env['JWT_REFRESH_SECRET'] = STRONG_A;
     expect(() => validateEnv()).toThrow(/unterschiedlich/);
+  });
+
+  it('throws when SUPABASE_SECRET_KEY is missing', () => {
+    delete process.env['SUPABASE_SECRET_KEY'];
+    expect(() => validateEnv()).toThrow(/SUPABASE_SECRET_KEY/);
+  });
+
+  it('throws when RESEND_API_KEY is missing', () => {
+    delete process.env['RESEND_API_KEY'];
+    expect(() => validateEnv()).toThrow(/RESEND_API_KEY/);
   });
 });

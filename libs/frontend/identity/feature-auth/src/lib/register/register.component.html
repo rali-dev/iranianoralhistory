@@ -1,15 +1,15 @@
 <div class="flex flex-col items-center justify-start min-h-[calc(100dvh-var(--ioh-nav-h))] px-[clamp(1rem,4vw,2rem)] pb-[clamp(2rem,5vw,4rem)] pt-3 gap-[clamp(1.25rem,3vw,2rem)] min-[961px]:px-4 min-[961px]:pb-8 min-[961px]:gap-5"
-  style="background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(127,0,0,0.05) 0%, transparent 60%), var(--auth-page-bg);"
+  style="background: radial-gradient(ellipse 70% 60% at 50% 0%, color-mix(in srgb, var(--accent) 5%, transparent) 0%, transparent 60%), var(--auth-page-bg);"
   [dir]="i18n.isRtl() ? 'rtl' : 'ltr'">
 
   <!-- Card -->
-  <div class="w-full max-w-[480px] bg-[var(--bg-card)] backdrop-blur-[24px] [-webkit-backdrop-filter:blur(24px)] border border-[rgba(127,0,0,0.13)] border-t-2 border-t-[rgba(127,0,0,0.28)] rounded-[10px] shadow-[0_8px_40px_rgba(0,0,0,0.12),0_2px_10px_rgba(0,0,0,0.07),0_0_0_1px_rgba(127,0,0,0.04)] px-10 pt-8 pb-7 flex flex-col">
+  <div class="w-full max-w-[480px] bg-[var(--bg-card)] backdrop-blur-[24px] [-webkit-backdrop-filter:blur(24px)] border border-[color-mix(in_srgb,var(--accent)_13%,transparent)] border-t-2 border-t-[color-mix(in_srgb,var(--accent)_28%,transparent)] rounded-[10px] shadow-[0_8px_40px_rgba(0,0,0,0.12),0_2px_10px_rgba(0,0,0,0.07),0_0_0_1px_color-mix(in_srgb,var(--accent)_4%,transparent)] px-10 pt-8 pb-7 flex flex-col">
 
     <header class="mb-6 text-center">
       <a routerLink="/" class="inline-block no-underline mb-4" [attr.aria-label]="i18n.t('AUTH.BACK_HOME')">
-        <span class="font-[family-name:var(--font-display)] text-[1.1rem] font-bold text-[#7F0000] tracking-[0.14em]">RAIOH</span>
+        <span class="font-[family-name:var(--font-display)] text-[1.1rem] font-bold text-[var(--accent)] tracking-[0.14em]">RAIOH</span>
       </a>
-      <h1 class="font-[family-name:var(--font-ui)] text-[1.5rem] font-[500] text-[#7F0000] tracking-[-0.02em] leading-[1.25] m-0 mb-2">{{ i18n.t('AUTH.REGISTER.TITLE') }}</h1>
+      <h1 class="font-[family-name:var(--font-ui)] text-[1.5rem] font-[500] text-[var(--accent)] tracking-[-0.02em] leading-[1.25] m-0 mb-2">{{ i18n.t('AUTH.REGISTER.TITLE') }}</h1>
       <p class="font-[family-name:var(--font-ui)] text-[0.875rem] font-normal text-[var(--text-muted)] leading-[1.55] m-0">{{ i18n.t('AUTH.REGISTER.SUBTITLE') }}</p>
     </header>
 
@@ -20,7 +20,7 @@
         <label class="font-[family-name:var(--font-ui)] text-[0.8125rem] font-[500] tracking-[0.01em] text-[var(--text-secondary)]" for="reg-email">{{ i18n.t('AUTH.REGISTER.EMAIL') }}</label>
         <input
           id="reg-email"
-          class="w-full py-[0.6875rem] px-[0.875rem] ioh-auth-input bg-[var(--accent-glow-soft)] border-[1.5px] border-[var(--border-light)] rounded-[6px] text-[var(--text-muted)] font-[family-name:var(--font-ui)] text-[1rem] font-normal leading-[1.5] min-h-[51px] transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-[var(--text-muted)] placeholder:font-normal focus:border-[2.5px] focus:border-[#7F0000] focus:shadow-[0_0_0_3px_rgba(127,0,0,0.08)]"
+          class="w-full py-[0.6875rem] px-[0.875rem] ioh-auth-input bg-[var(--accent-glow-soft)] border-[1.5px] border-[var(--border-light)] rounded-[6px] text-[var(--text-muted)] font-[family-name:var(--font-ui)] text-[1rem] font-normal leading-[1.5] min-h-[51px] transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-[var(--text-muted)] placeholder:font-normal focus:border-[2.5px] focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_var(--accent-glow)]"
           [class.border-red-400]="email.invalid && email.touched"
           type="email"
           inputmode="email"
@@ -43,7 +43,7 @@
         <div class="relative flex">
           <input
             id="reg-password"
-            class="w-full py-[0.6875rem] px-[0.875rem] pr-12 ioh-auth-input bg-[var(--accent-glow-soft)] border-[1.5px] border-[var(--border-light)] rounded-[6px] text-[var(--text-muted)] font-[family-name:var(--font-ui)] text-[1rem] font-normal leading-[1.5] min-h-[51px] transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-[var(--text-muted)] placeholder:font-normal focus:border-[2.5px] focus:border-[#7F0000] focus:shadow-[0_0_0_3px_rgba(127,0,0,0.08)]"
+            class="w-full py-[0.6875rem] px-[0.875rem] pr-12 ioh-auth-input bg-[var(--accent-glow-soft)] border-[1.5px] border-[var(--border-light)] rounded-[6px] text-[var(--text-muted)] font-[family-name:var(--font-ui)] text-[1rem] font-normal leading-[1.5] min-h-[51px] transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-[var(--text-muted)] placeholder:font-normal focus:border-[2.5px] focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_var(--accent-glow)]"
             [class.border-red-400]="password.invalid && password.touched"
             [type]="showPassword() ? 'text' : 'password'"
             autocomplete="new-password"
@@ -53,7 +53,7 @@
           />
           <button
             type="button"
-            class="absolute right-0 top-0 h-full w-12 flex items-center justify-center bg-transparent border-0 text-[var(--text-muted)] cursor-pointer transition-colors duration-200 hover:text-[#7F0000] focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[-2px]"
+            class="absolute right-0 top-0 h-full w-12 flex items-center justify-center bg-transparent border-0 text-[var(--text-muted)] cursor-pointer transition-colors duration-200 hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px]"
             (click)="togglePassword()"
             [attr.aria-label]="showPassword() ? i18n.t('AUTH.REGISTER.HIDE_PW') : i18n.t('AUTH.REGISTER.SHOW_PW')"
           >
@@ -82,7 +82,7 @@
         <label class="font-[family-name:var(--font-ui)] text-[0.8125rem] font-[500] tracking-[0.01em] text-[var(--text-secondary)]" for="reg-confirm">{{ i18n.t('AUTH.REGISTER.CONFIRM_PW') }}</label>
         <input
           id="reg-confirm"
-          class="w-full py-[0.6875rem] px-[0.875rem] ioh-auth-input bg-[var(--accent-glow-soft)] border-[1.5px] border-[var(--border-light)] rounded-[6px] text-[var(--text-muted)] font-[family-name:var(--font-ui)] text-[1rem] font-normal leading-[1.5] min-h-[51px] transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-[var(--text-muted)] placeholder:font-normal focus:border-[2.5px] focus:border-[#7F0000] focus:shadow-[0_0_0_3px_rgba(127,0,0,0.08)]"
+          class="w-full py-[0.6875rem] px-[0.875rem] ioh-auth-input bg-[var(--accent-glow-soft)] border-[1.5px] border-[var(--border-light)] rounded-[6px] text-[var(--text-muted)] font-[family-name:var(--font-ui)] text-[1rem] font-normal leading-[1.5] min-h-[51px] transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-[var(--text-muted)] placeholder:font-normal focus:border-[2.5px] focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_var(--accent-glow)]"
           [class.border-red-400]="(confirmPassword.invalid && confirmPassword.touched) || (form.hasError('passwordMismatch') && confirmPassword.touched)"
           [type]="showPassword() ? 'text' : 'password'"
           autocomplete="new-password"
@@ -110,7 +110,7 @@
       <!-- Submit -->
       <button
         type="submit"
-        class="ioh-btn-border relative w-full flex justify-center items-center gap-[0.6rem] px-7 py-[0.875rem] font-[family-name:var(--font-ui)] text-[0.8125rem] font-normal tracking-[0.01em] cursor-pointer min-h-[51px] mt-3 transition-[background] duration-200 focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[3px]"
+        class="ioh-btn-border relative w-full flex justify-center items-center gap-[0.6rem] px-7 py-[0.875rem] font-[family-name:var(--font-ui)] text-[0.8125rem] font-normal tracking-[0.01em] cursor-pointer min-h-[51px] mt-3 transition-[background] duration-200 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[3px]"
         [disabled]="isLoading()"
         [attr.aria-busy]="isLoading()"
       >
@@ -126,7 +126,7 @@
 
     <footer class="mt-5 text-center font-[family-name:var(--font-ui)] text-[0.875rem] font-normal text-[var(--text-muted)] leading-[1.5]">
       {{ i18n.t('AUTH.REGISTER.FOOTER') }}
-      <a routerLink="/login" class="auth-link font-[family-name:var(--font-ui)] font-[500] text-[#7F0000] no-underline ml-1 transition-colors duration-200 hover:text-[#A30000] hover:underline focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px]">{{ i18n.t('AUTH.REGISTER.LOGIN_LINK') }}</a>
+      <a routerLink="/login" class="auth-link font-[family-name:var(--font-ui)] font-[500] text-[var(--accent)] no-underline ml-1 transition-colors duration-200 hover:text-[var(--accent-light)] hover:underline focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[2px]">{{ i18n.t('AUTH.REGISTER.LOGIN_LINK') }}</a>
     </footer>
 
   </div>

@@ -1,4 +1,14 @@
+import { ConfigService } from '@nestjs/config';
 import { ResendEmailService } from './resend-email.service';
+
+const fakeConfig = {
+  get: (k: string) => process.env[k],
+  getOrThrow: (k: string) => {
+    const v = process.env[k];
+    if (v === undefined) throw new Error(`Missing ${k}`);
+    return v;
+  },
+} as unknown as ConfigService;
 
 const mockSend = jest.fn();
 
@@ -15,7 +25,7 @@ describe('ResendEmailService', () => {
     jest.clearAllMocks();
     process.env['RESEND_API_KEY'] = 'test-api-key';
     process.env['RESEND_FROM_ADDRESS'] = 'no-reply@raioh.de';
-    service = new ResendEmailService();
+    service = new ResendEmailService(fakeConfig);
   });
 
   describe('sendPasswordResetCode()', () => {

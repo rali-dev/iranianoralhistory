@@ -1,6 +1,16 @@
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { TokenUtilsService } from './token-utils.service';
 import { IJwtPayload } from '@iranianoralhistory/shared-contracts';
+
+const fakeConfig = {
+  get: (k: string) => process.env[k],
+  getOrThrow: (k: string) => {
+    const v = process.env[k];
+    if (v === undefined) throw new Error(`Missing ${k}`);
+    return v;
+  },
+} as unknown as ConfigService;
 
 const TEST_PAYLOAD: IJwtPayload = {
   id: 'user-uuid',
@@ -17,7 +27,7 @@ describe('TokenUtilsService', () => {
       sign: jest.fn().mockReturnValue('signed-token'),
     } as any;
 
-    service = new TokenUtilsService(jwtService);
+    service = new TokenUtilsService(jwtService, fakeConfig);
 
     process.env['JWT_SECRET'] = 'test-jwt-secret';
     process.env['JWT_REFRESH_SECRET'] = 'test-refresh-secret';
@@ -42,7 +52,7 @@ describe('TokenUtilsService', () => {
     it('throws when JWT_SECRET is not set', () => {
       delete process.env['JWT_SECRET'];
 
-      expect(() => service.signAccessToken(TEST_PAYLOAD)).toThrow('JWT_SECRET not set');
+      expect(() => service.signAccessToken(TEST_PAYLOAD)).toThrow(/JWT_SECRET/);
     });
   });
 
@@ -60,7 +70,7 @@ describe('TokenUtilsService', () => {
     it('throws when JWT_REFRESH_SECRET is not set', () => {
       delete process.env['JWT_REFRESH_SECRET'];
 
-      expect(() => service.signRefreshToken(TEST_PAYLOAD)).toThrow('JWT_REFRESH_SECRET not set');
+      expect(() => service.signRefreshToken(TEST_PAYLOAD)).toThrow(/JWT_REFRESH_SECRET/);
     });
   });
 });
