@@ -58,10 +58,6 @@ export class AboutComponent {
     this.sections.filter(s => !s.rtlOnly || this.i18n.isRtl()),
   );
 
-  readonly activeSectionMeta = computed(() =>
-    this.sections.find(s => s.key === this.activeSection())!
-  );
-
   /** Persian-only archive index rendered inside the expandable inventory panel. */
   readonly archiveIndexIntro    = ARCHIVE_INDEX_INTRO;
   readonly archiveIndexSections = ARCHIVE_INDEX_SECTIONS;

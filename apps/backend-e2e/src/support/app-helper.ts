@@ -1,6 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { AppModule } from '../../../backend/src/app/app.module';
 import { PrismaService, PrismaExceptionFilter } from '@iranianoralhistory/backend-shared-database';
@@ -26,9 +27,9 @@ export interface TestApp {
 
 /**
  * Bootet die komplette NestJS-Anwendung in-process ohne externen Server.
- * Spiegelt den Bootstrap in main.ts wider (Prefix, Cookies, globale Filter,
- * ValidationPipe). helmet()/CORS sind Transport-Härtung ohne Verhaltensrelevanz
- * für supertest und bleiben bewusst außen vor.
+ * Spiegelt den Bootstrap in main.ts VOLLSTÄNDIG wider: Prefix, helmet, CORS,
+ * Cookies, globale Filter, ValidationPipe — damit auch die Transport-Härtung
+ * (Security-Header, CORS) unter Test steht.
  */
 export async function createTestApp(): Promise<TestApp> {
   const sentResetCodes: SentResetCode[] = [];
@@ -46,6 +47,8 @@ export async function createTestApp(): Promise<TestApp> {
 
   const app = module.createNestApplication();
   app.setGlobalPrefix('api');
+  app.use(helmet());
+  app.enableCors({ origin: 'http://localhost:4200', credentials: true });
   app.use(cookieParser());
   app.useGlobalFilters(new DomainExceptionFilter(), new PrismaExceptionFilter());
   app.useGlobalPipes(

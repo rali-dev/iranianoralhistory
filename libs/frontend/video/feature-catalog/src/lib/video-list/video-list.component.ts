@@ -241,17 +241,6 @@ export class VideoListComponent implements OnInit {
     return this.i18n.isRtl();
   }
 
-  videoCount(): string {
-    const n = this.videos().length;
-    return n === 1
-      ? this.i18n.t('ARCHIVE.COUNT_ONE', { n })
-      : this.i18n.t('ARCHIVE.COUNT_MANY', { n });
-  }
-
-  docCount(count: number): string {
-    return `${count} ${this.i18n.t('ARCHIVE.DOC_SHORT')}`;
-  }
-
   onSearchInput(event: Event): void {
     this.searchQuery.set((event.target as HTMLInputElement).value);
   }

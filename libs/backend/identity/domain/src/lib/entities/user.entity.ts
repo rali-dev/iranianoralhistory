@@ -45,14 +45,4 @@ export class UserEntity {
   hasRefreshToken(): boolean {
     return this.hashedRefreshToken !== null;
   }
-
-  withoutSensitiveData(): { id: string; email: string; role: UserRole; createdAt?: Date; updatedAt?: Date } {
-    return {
-      id: this.id,
-      email: this.email.toString(),
-      role: this.role,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-    };
-  }
 }

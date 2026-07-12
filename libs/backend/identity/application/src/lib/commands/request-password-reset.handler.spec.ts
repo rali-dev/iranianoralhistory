@@ -4,7 +4,7 @@ import { UserEntity } from '@iranianoralhistory/backend-identity-domain';
 
 const mockUser: Partial<UserEntity> = { id: 'user-uuid', email: 'test@example.com' as any };
 
-const mockUserRepo = { findByEmail: jest.fn(), findById: jest.fn(), save: jest.fn(), updatePassword: jest.fn(), updateRefreshToken: jest.fn() };
+const mockUserRepo = { findByEmail: jest.fn(), findById: jest.fn(), create: jest.fn(), updatePassword: jest.fn(), updateRefreshToken: jest.fn() };
 const mockResetRepo = { findByUserId: jest.fn(), upsert: jest.fn(), deleteByUserId: jest.fn() };
 const mockEmailService = { sendPasswordResetCode: jest.fn() };
 const mockPasswordHasher = { hash: jest.fn(), compare: jest.fn() };

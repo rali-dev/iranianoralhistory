@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { BoulorianComponent } from './boulorian.component';
-import { I18nService } from '@iranianoralhistory/frontend-shared-i18n';
 
 async function createComponent() {
   await TestBed.configureTestingModule({
@@ -21,11 +20,6 @@ describe('BoulorianComponent', () => {
   it('creates', async () => {
     const { component } = await createComponent();
     expect(component).toBeTruthy();
-  });
-
-  it('exposes the injected I18nService', async () => {
-    const { component } = await createComponent();
-    expect(component.i18n).toBeInstanceOf(I18nService);
   });
 
   it('renders the letter page title heading', async () => {

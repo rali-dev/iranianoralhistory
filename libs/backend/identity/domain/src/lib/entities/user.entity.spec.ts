@@ -91,21 +91,4 @@ describe('UserEntity', () => {
     });
   });
 
-  describe('withoutSensitiveData()', () => {
-    it('omits hashedPassword and hashedRefreshToken', () => {
-      const user = buildUser();
-      const safe = user.withoutSensitiveData();
-      expect(safe).not.toHaveProperty('hashedPassword');
-      expect(safe).not.toHaveProperty('hashedRefreshToken');
-    });
-
-    it('returns id, email, role, and createdAt', () => {
-      const user = buildUser({ role: 'ADMIN' });
-      const safe = user.withoutSensitiveData();
-      expect(safe.id).toBe('user-uuid-1');
-      expect(safe.email).toBe('max@example.de');
-      expect(safe.role).toBe('ADMIN');
-      expect(safe.createdAt).toBeInstanceOf(Date);
-    });
-  });
 });

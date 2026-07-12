@@ -204,5 +204,17 @@ describe('Documents (Integration)', () => {
         .set('Cookie', userCookies);
       expect(res.status).toBe(403);
     });
+
+    // Policy (bewusst): Signed-URLs sind NICHT admin-only — jeder authentifizierte
+    // Nutzer darf eine anfordern. Ein Nicht-Admin passiert also den JwtAuthGuard
+    // (kein 403) und erhält für ein unbekanntes Dokument 404 (nicht 401).
+    it('GET signed-url is allowed for any authenticated user — unknown doc → 404, not 401/403', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/documents/00000000-0000-0000-0000-000000000000/signed-url')
+        .set('Cookie', userCookies)
+        .redirects(0);
+
+      expect(res.status).toBe(404);
+    });
   });
 });

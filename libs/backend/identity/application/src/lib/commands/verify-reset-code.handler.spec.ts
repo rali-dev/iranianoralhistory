@@ -6,7 +6,7 @@ const mockUser = { id: 'user-uuid', email: 'test@example.com' };
 const futureDate = new Date(Date.now() + 10 * 60 * 1000);
 const pastDate = new Date(Date.now() - 1000);
 
-const mockUserRepo = { findByEmail: jest.fn(), findById: jest.fn(), save: jest.fn(), updatePassword: jest.fn(), updateRefreshToken: jest.fn() };
+const mockUserRepo = { findByEmail: jest.fn(), findById: jest.fn(), create: jest.fn(), updatePassword: jest.fn(), updateRefreshToken: jest.fn() };
 const mockResetRepo = { findByUserId: jest.fn(), upsert: jest.fn(), deleteByUserId: jest.fn() };
 const mockPasswordHasher = { hash: jest.fn(), compare: jest.fn() };
 

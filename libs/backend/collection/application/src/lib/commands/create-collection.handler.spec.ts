@@ -18,11 +18,13 @@ function buildCollection(): CollectionEntity {
 
 const mockCollectionRepo = {
   findAll: jest.fn(),
-  findById: jest.fn(),
+  findBySlug: jest.fn(),
+  findByType: jest.fn(),
   create: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
   assignVideo: jest.fn(),
+  removeVideo: jest.fn(),
 };
 
 describe('CreateCollectionHandler', () => {
