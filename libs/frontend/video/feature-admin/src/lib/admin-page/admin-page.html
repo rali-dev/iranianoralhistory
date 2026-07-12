@@ -1,0 +1,527 @@
+<div class="admin-shell">
+
+  <!-- Header -->
+  <header class="admin-header">
+    <div class="admin-header__inner">
+      <div class="admin-header__brand">
+        <span class="admin-header__badge">{{ i18n.t('ADMIN.HEADER_BADGE') }}</span>
+        <h1 class="admin-header__title">{{ i18n.t('ADMIN.PAGE_TITLE') }}</h1>
+      </div>
+    </div>
+  </header>
+
+  <!-- Status / Error Toast -->
+  @if (statusMsg()) {
+    <div class="admin-toast admin-toast--ok" role="status">{{ statusMsg() }}</div>
+  }
+  @if (errorMsg()) {
+    <div class="admin-toast admin-toast--err" role="alert">{{ errorMsg() }}</div>
+  }
+
+  <!-- Tab Navigation -->
+  <nav class="admin-tabs" role="tablist">
+  <div class="admin-tabs__inner">
+    <button role="tab" class="admin-tab" [class.admin-tab--active]="activeTab() === 'videos'"
+      (click)="setTab('videos')" [attr.aria-selected]="activeTab() === 'videos'">
+      <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+        <path d="M164.44,105.34l-48-32A8,8,0,0,0,104,80v64a8,8,0,0,0,12.44,6.66l48-32a8,8,0,0,0,0-13.32ZM120,129.05V95l29.79,19.81ZM216,40H40A16,16,0,0,0,24,56V168a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,128H40V56H216V168Zm16,40a8,8,0,0,1-8,8H32a8,8,0,0,1,0-16H224A8,8,0,0,1,232,208Z"/>
+      </svg>
+      {{ i18n.t('ADMIN.TAB_VIDEOS') }}
+      <span class="admin-tab__count">{{ videos().length }}</span>
+    </button>
+    <button role="tab" class="admin-tab" [class.admin-tab--active]="activeTab() === 'collections'"
+      (click)="setTab('collections')" [attr.aria-selected]="activeTab() === 'collections'">
+      <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+        <path d="M216,72H130.67L102.93,51.2a16.12,16.12,0,0,0-9.6-3.2H40A16,16,0,0,0,24,64V192a16,16,0,0,0,16,16H216.62A15.4,15.4,0,0,0,232,192.62V88A16,16,0,0,0,216,72ZM40,64H93.33l21.34,16H40ZM216,192H40V96H216Z"/>
+      </svg>
+      {{ i18n.t('ADMIN.TAB_COLLECTIONS') }}
+      <span class="admin-tab__count">{{ persons().length }}</span>
+    </button>
+    <button role="tab" class="admin-tab" [class.admin-tab--active]="activeTab() === 'categories'"
+      (click)="setTab('categories')" [attr.aria-selected]="activeTab() === 'categories'">
+      <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+        <path d="M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8V132.69A15.86,15.86,0,0,0,36.69,144l99.32,99.31a16,16,0,0,0,22.63,0l84.67-84.67a16,16,0,0,0,0-22.62ZM153.37,231,56,133.66V48h85.66L239,145.37ZM100,84A12,12,0,1,1,88,72,12,12,0,0,1,100,84Z"/>
+      </svg>
+      {{ i18n.t('ADMIN.TAB_CATEGORIES') }}
+      <span class="admin-tab__count">{{ topics().length }}</span>
+    </button>
+  </div>
+  </nav>
+
+  <!-- Content -->
+  <main class="admin-content">
+
+    <!-- ── VIDEOS TAB ── -->
+    @if (activeTab() === 'videos') {
+      <section class="admin-section">
+        <lib-video-create-form (videoCreated)="onVideoCreated($event)" />
+
+        <div class="admin-list-header">
+          <h4 class="admin-list-title">{{ i18n.t('ADMIN.TAB_VIDEOS') }}</h4>
+          <span class="admin-list-count">{{ i18n.t('ADMIN.LIST_ENTRIES', { n: videos().length }) }}</span>
+        </div>
+
+        @if (videosLoading()) {
+          <div class="admin-loading">
+            <span class="admin-spinner admin-spinner--lg"></span>
+            <p>{{ i18n.t('ADMIN.LOADING_VIDEOS') }}</p>
+          </div>
+        }
+
+        @if (!videosLoading() && videos().length === 0) {
+          <div class="admin-empty"><p>{{ i18n.t('ADMIN.EMPTY_VIDEOS') }}</p></div>
+        }
+
+        <div class="admin-list">
+          @for (video of videos(); track video.id) {
+            <div class="admin-list-item" [class.admin-list-item--editing]="editingVideoId() === video.id">
+
+              <!-- Normal view row -->
+              @if (editingVideoId() !== video.id) {
+                <div class="admin-list-item__main">
+                  <div class="admin-list-item__info">
+                    <strong class="admin-list-item__title">{{ video.title.de }}</strong>
+                    <span class="admin-list-item__meta">Vimeo: {{ video.vimeoId }}</span>
+                  </div>
+                  <div class="admin-list-item__actions">
+                    <span class="admin-badge">{{ i18n.t('ADMIN.LIST_ENTRIES', { n: video.documents.length }) }}</span>
+                    <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="toggleDocuments(video.id)">
+                      {{ expandedVideoId() === video.id ? i18n.t('ADMIN.CLOSE') : i18n.t('ADMIN.MANAGE_DOCS') }}
+                    </button>
+                    <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="startEditVideo(video)">
+                      {{ i18n.t('ADMIN.EDIT') }}
+                    </button>
+                    @if (videoDelete.confirmId() === video.id) {
+                      <button class="admin-btn admin-btn--danger admin-btn--sm"
+                        (click)="confirmDeleteVideo(video.id)"
+                        [disabled]="videoDelete.deletingId() === video.id">
+                        {{ i18n.t('ADMIN.DELETE_CONFIRM') }}
+                      </button>
+                      <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="videoDelete.cancel()">
+                        {{ i18n.t('ADMIN.CANCEL') }}
+                      </button>
+                    } @else {
+                      <button class="admin-btn admin-btn--danger-outline admin-btn--sm"
+                        (click)="videoDelete.ask(video.id)"
+                        [disabled]="videoDelete.deletingId() === video.id">
+                        {{ videoDelete.deletingId() === video.id ? '…' : i18n.t('ADMIN.DELETE') }}
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- Documents panel -->
+                @if (expandedVideoId() === video.id) {
+                  <div class="admin-list-item__expanded">
+                    @if (video.documents.length > 0) {
+                      <ul class="admin-doc-list">
+                        @for (doc of video.documents; track doc.id) {
+                          <li class="admin-doc-list__item">
+                            <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                              <path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Z"/>
+                            </svg>
+                            <span>{{ doc.title }}</span>
+                            <code class="admin-doc-list__key">{{ doc.storagePath }}</code>
+                            <div class="admin-doc-list__actions">
+                              @if (docDelete.confirmId() === doc.id) {
+                                <button class="admin-btn admin-btn--danger admin-btn--xs"
+                                  (click)="confirmDeleteDoc(video.id, doc.id)"
+                                  [disabled]="docDelete.deletingId() === doc.id">
+                                  {{ i18n.t('ADMIN.DELETE_CONFIRM') }}
+                                </button>
+                                <button class="admin-btn admin-btn--outline admin-btn--xs" (click)="docDelete.cancel()">
+                                  {{ i18n.t('ADMIN.CANCEL') }}
+                                </button>
+                              } @else {
+                                <button class="admin-btn admin-btn--danger-outline admin-btn--xs"
+                                  (click)="docDelete.ask(doc.id)"
+                                  [disabled]="docDelete.deletingId() === doc.id">
+                                  {{ docDelete.deletingId() === doc.id ? '…' : i18n.t('ADMIN.DELETE') }}
+                                </button>
+                              }
+                            </div>
+                          </li>
+                        }
+                      </ul>
+                    }
+                    <lib-document-add-form [videoId]="video.id" (documentAdded)="onDocumentAdded(video.id, $event)" />
+
+                    <!-- Collections & Categories management -->
+                    <div class="admin-assign">
+                      <h5 class="admin-assign__title">{{ i18n.t('ADMIN.ASSIGN_TITLE') }}</h5>
+
+                      @if (video.collections.length > 0) {
+                        <div class="admin-assign__chips">
+                          @for (col of video.collections; track col.id) {
+                            <span class="admin-chip">
+                              <span class="admin-chip__type">{{ col.type === 'PERSON' ? i18n.t('ADMIN.TYPE_PERSON') : i18n.t('ADMIN.TYPE_TOPIC') }}</span>
+                              <span class="admin-chip__name">{{ col.name.de }}</span>
+                              <button type="button" class="admin-chip__remove"
+                                (click)="unassignCollection(video.id, col.id)"
+                                [attr.aria-label]="i18n.t('ADMIN.ASSIGN_REMOVE')">×</button>
+                            </span>
+                          }
+                        </div>
+                      } @else {
+                        <p class="admin-assign__empty">{{ i18n.t('ADMIN.ASSIGN_EMPTY') }}</p>
+                      }
+
+                      <div class="admin-assign__add">
+                        <select class="admin-input admin-assign__select"
+                          [ngModel]="assignTargetId()" (ngModelChange)="assignTargetId.set($event)">
+                          <option value="">{{ i18n.t('ADMIN.ASSIGN_SELECT') }}</option>
+                          @for (col of availableCollections(video); track col.id) {
+                            <option [value]="col.id">{{ col.name.de }} — {{ col.type === 'PERSON' ? i18n.t('ADMIN.TYPE_PERSON') : i18n.t('ADMIN.TYPE_TOPIC') }}</option>
+                          }
+                        </select>
+                        <button type="button" class="admin-btn admin-btn--outline admin-btn--sm"
+                          (click)="assignCollection(video.id)"
+                          [disabled]="!assignTargetId() || assigningVideoId() === video.id">
+                          {{ i18n.t('ADMIN.ASSIGN_BTN') }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              }
+
+              <!-- Edit form -->
+              @if (editingVideoId() === video.id && editingVideoState()) {
+                <div class="admin-edit-form">
+                  <h4 class="admin-edit-form__title">{{ i18n.t('ADMIN.EDIT_VIDEO_TITLE') }}</h4>
+
+                  <div class="admin-edit-form__field">
+                    <label class="admin-edit-form__label" for="admin-edit-video-vimeo">Vimeo-ID</label>
+                    <input id="admin-edit-video-vimeo" class="admin-edit-form__input"
+                      [ngModel]="editingVideoState()!.vimeoId"
+                      (ngModelChange)="editingVideoState.update(s => s ? { ...s, vimeoId: $event } : s)" />
+                  </div>
+
+                  <fieldset class="admin-edit-form__fieldset">
+                    <legend class="admin-edit-form__legend">{{ i18n.t('ADMIN.VIDEO.TITLE_LEGEND') }}</legend>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-video-title-de">{{ i18n.t('ADMIN.LANG_DE') }}</label>
+                      <input id="admin-edit-video-title-de" class="admin-edit-form__input"
+                        [ngModel]="editingVideoState()!.titleDe"
+                        (ngModelChange)="editingVideoState.update(s => s ? { ...s, titleDe: $event } : s)" />
+                    </div>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-video-title-en">{{ i18n.t('ADMIN.LANG_EN') }}</label>
+                      <input id="admin-edit-video-title-en" class="admin-edit-form__input"
+                        [ngModel]="editingVideoState()!.titleEn"
+                        (ngModelChange)="editingVideoState.update(s => s ? { ...s, titleEn: $event } : s)" />
+                    </div>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-video-title-fa">{{ i18n.t('ADMIN.LANG_FA') }}</label>
+                      <input id="admin-edit-video-title-fa" class="admin-edit-form__input" dir="rtl"
+                        [ngModel]="editingVideoState()!.titleFa"
+                        (ngModelChange)="editingVideoState.update(s => s ? { ...s, titleFa: $event } : s)" />
+                    </div>
+                  </fieldset>
+
+                  <fieldset class="admin-edit-form__fieldset">
+                    <legend class="admin-edit-form__legend">{{ i18n.t('ADMIN.VIDEO.DESC_LEGEND') }} {{ i18n.t('ADMIN.OPTIONAL') }}</legend>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-video-desc-de">{{ i18n.t('ADMIN.LANG_DE') }}</label>
+                      <textarea id="admin-edit-video-desc-de" class="admin-edit-form__input admin-edit-form__textarea"
+                        [ngModel]="editingVideoState()!.descDe"
+                        (ngModelChange)="editingVideoState.update(s => s ? { ...s, descDe: $event } : s)"></textarea>
+                    </div>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-video-desc-en">{{ i18n.t('ADMIN.LANG_EN') }}</label>
+                      <textarea id="admin-edit-video-desc-en" class="admin-edit-form__input admin-edit-form__textarea"
+                        [ngModel]="editingVideoState()!.descEn"
+                        (ngModelChange)="editingVideoState.update(s => s ? { ...s, descEn: $event } : s)"></textarea>
+                    </div>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-video-desc-fa">{{ i18n.t('ADMIN.LANG_FA') }}</label>
+                      <textarea id="admin-edit-video-desc-fa" class="admin-edit-form__input admin-edit-form__textarea" dir="rtl"
+                        [ngModel]="editingVideoState()!.descFa"
+                        (ngModelChange)="editingVideoState.update(s => s ? { ...s, descFa: $event } : s)"></textarea>
+                    </div>
+                  </fieldset>
+
+                  <div class="admin-edit-form__footer">
+                    <button class="admin-btn admin-btn--primary" (click)="saveEditVideo(video.id)"
+                      [disabled]="savingVideoId() === video.id">
+                      {{ savingVideoId() === video.id ? i18n.t('ADMIN.SAVING') : i18n.t('ADMIN.SAVE') }}
+                    </button>
+                    <button class="admin-btn admin-btn--outline" (click)="cancelEditVideo()">
+                      {{ i18n.t('ADMIN.CANCEL') }}
+                    </button>
+                  </div>
+                </div>
+              }
+
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ── COLLECTIONS TAB (PERSON type) ── -->
+    @if (activeTab() === 'collections') {
+      <section class="admin-section">
+        <lib-collection-create-form [fixedType]="'PERSON'" (collectionCreated)="onCollectionCreated($event)" />
+
+        <div class="admin-list-header">
+          <h4 class="admin-list-title">{{ i18n.t('ADMIN.TAB_COLLECTIONS') }}</h4>
+          <span class="admin-list-count">{{ i18n.t('ADMIN.LIST_ENTRIES', { n: persons().length }) }}</span>
+        </div>
+
+        @if (collectionsLoading()) {
+          <div class="admin-loading">
+            <span class="admin-spinner admin-spinner--lg"></span>
+            <p>{{ i18n.t('ADMIN.LOADING_COLLECTIONS') }}</p>
+          </div>
+        }
+
+        @if (!collectionsLoading() && persons().length === 0) {
+          <div class="admin-empty"><p>{{ i18n.t('ADMIN.EMPTY_COLLECTIONS') }}</p></div>
+        }
+
+        <div class="admin-list">
+          @for (col of persons(); track col.id) {
+            <div class="admin-list-item" [class.admin-list-item--editing]="editingCollectionId() === col.id">
+
+              @if (editingCollectionId() !== col.id) {
+                <div class="admin-list-item__main">
+                  <div class="admin-list-item__info">
+                    <strong class="admin-list-item__title">{{ col.name.de }}</strong>
+                    <span class="admin-list-item__meta"><code class="admin-slug">{{ col.slug }}</code></span>
+                  </div>
+                  <div class="admin-list-item__actions">
+                    <span class="admin-badge admin-badge--type">{{ i18n.t('ADMIN.TYPE_PERSON') }}</span>
+                    <span class="admin-badge">{{ i18n.t('ADMIN.FILMS_COUNT', { n: col.videoCount }) }}</span>
+                    <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="startEditCollection(col)">
+                      {{ i18n.t('ADMIN.EDIT') }}
+                    </button>
+                    @if (collectionDelete.confirmId() === col.id) {
+                      <button class="admin-btn admin-btn--danger admin-btn--sm"
+                        (click)="confirmDeleteCollection(col.id, false)"
+                        [disabled]="collectionDelete.deletingId() === col.id">
+                        {{ i18n.t('ADMIN.DELETE_CONFIRM') }}
+                      </button>
+                      <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="collectionDelete.cancel()">
+                        {{ i18n.t('ADMIN.CANCEL') }}
+                      </button>
+                    } @else {
+                      <button class="admin-btn admin-btn--danger-outline admin-btn--sm"
+                        (click)="collectionDelete.ask(col.id)"
+                        [disabled]="collectionDelete.deletingId() === col.id">
+                        {{ collectionDelete.deletingId() === col.id ? '…' : i18n.t('ADMIN.DELETE') }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (editingCollectionId() === col.id && editingCollectionState()) {
+                <div class="admin-edit-form">
+                  <h4 class="admin-edit-form__title">{{ i18n.t('ADMIN.EDIT_COL_TITLE') }}</h4>
+                  <div class="admin-edit-form__field">
+                    <label class="admin-edit-form__label" for="admin-edit-col-slug">{{ i18n.t('ADMIN.COL.SLUG_LABEL') }}</label>
+                    <input id="admin-edit-col-slug" class="admin-edit-form__input"
+                      [ngModel]="editingCollectionState()!.slug"
+                      (ngModelChange)="editingCollectionState.update(s => s ? { ...s, slug: $event } : s)" />
+                  </div>
+                  <div class="admin-edit-form__field">
+                    <label class="admin-edit-form__label" for="admin-edit-col-order">{{ i18n.t('ADMIN.COL.ORDER_LABEL') }}</label>
+                    <input id="admin-edit-col-order" class="admin-edit-form__input admin-edit-form__input--sm" type="number" min="0"
+                      [ngModel]="editingCollectionState()!.sortOrder"
+                      (ngModelChange)="editingCollectionState.update(s => s ? { ...s, sortOrder: +$event } : s)" />
+                  </div>
+                  <fieldset class="admin-edit-form__fieldset">
+                    <legend class="admin-edit-form__legend">{{ i18n.t('ADMIN.COL.NAME_LEGEND') }}</legend>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-collection-name-de">{{ i18n.t('ADMIN.LANG_DE') }}</label>
+                      <input id="admin-edit-collection-name-de" class="admin-edit-form__input"
+                        [ngModel]="editingCollectionState()!.nameDe"
+                        (ngModelChange)="editingCollectionState.update(s => s ? { ...s, nameDe: $event } : s)" />
+                    </div>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-collection-name-en">{{ i18n.t('ADMIN.LANG_EN') }}</label>
+                      <input id="admin-edit-collection-name-en" class="admin-edit-form__input"
+                        [ngModel]="editingCollectionState()!.nameEn"
+                        (ngModelChange)="editingCollectionState.update(s => s ? { ...s, nameEn: $event } : s)" />
+                    </div>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-collection-name-fa">{{ i18n.t('ADMIN.LANG_FA') }}</label>
+                      <input id="admin-edit-collection-name-fa" class="admin-edit-form__input" dir="rtl"
+                        [ngModel]="editingCollectionState()!.nameFa"
+                        (ngModelChange)="editingCollectionState.update(s => s ? { ...s, nameFa: $event } : s)" />
+                    </div>
+                  </fieldset>
+                  <fieldset class="admin-edit-form__fieldset">
+                    <legend class="admin-edit-form__legend">{{ i18n.t('ADMIN.COL.DESC_LEGEND') }} {{ i18n.t('ADMIN.OPTIONAL') }}</legend>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-collection-desc-de">{{ i18n.t('ADMIN.LANG_DE') }}</label>
+                      <textarea id="admin-edit-collection-desc-de" class="admin-edit-form__input admin-edit-form__textarea"
+                        [ngModel]="editingCollectionState()!.descDe"
+                        (ngModelChange)="editingCollectionState.update(s => s ? { ...s, descDe: $event } : s)"></textarea>
+                    </div>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-collection-desc-en">{{ i18n.t('ADMIN.LANG_EN') }}</label>
+                      <textarea id="admin-edit-collection-desc-en" class="admin-edit-form__input admin-edit-form__textarea"
+                        [ngModel]="editingCollectionState()!.descEn"
+                        (ngModelChange)="editingCollectionState.update(s => s ? { ...s, descEn: $event } : s)"></textarea>
+                    </div>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-collection-desc-fa">{{ i18n.t('ADMIN.LANG_FA') }}</label>
+                      <textarea id="admin-edit-collection-desc-fa" class="admin-edit-form__input admin-edit-form__textarea" dir="rtl"
+                        [ngModel]="editingCollectionState()!.descFa"
+                        (ngModelChange)="editingCollectionState.update(s => s ? { ...s, descFa: $event } : s)"></textarea>
+                    </div>
+                  </fieldset>
+                  <div class="admin-edit-form__footer">
+                    <button class="admin-btn admin-btn--primary" (click)="saveEditCollection(col.id, false)"
+                      [disabled]="savingCollectionId() === col.id">
+                      {{ savingCollectionId() === col.id ? i18n.t('ADMIN.SAVING') : i18n.t('ADMIN.SAVE') }}
+                    </button>
+                    <button class="admin-btn admin-btn--outline" (click)="cancelEditCollection()">
+                      {{ i18n.t('ADMIN.CANCEL') }}
+                    </button>
+                  </div>
+                </div>
+              }
+
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ── CATEGORIES TAB (TOPIC type) ── -->
+    @if (activeTab() === 'categories') {
+      <section class="admin-section">
+        <lib-category-create-form (categoryCreated)="onCategoryCreated($event)" />
+
+        <div class="admin-list-header">
+          <h4 class="admin-list-title">{{ i18n.t('ADMIN.TAB_CATEGORIES') }}</h4>
+          <span class="admin-list-count">{{ i18n.t('ADMIN.LIST_ENTRIES', { n: topics().length }) }}</span>
+        </div>
+
+        @if (collectionsLoading()) {
+          <div class="admin-loading">
+            <span class="admin-spinner admin-spinner--lg"></span>
+            <p>{{ i18n.t('ADMIN.LOADING_CATEGORIES') }}</p>
+          </div>
+        }
+
+        @if (!collectionsLoading() && topics().length === 0) {
+          <div class="admin-empty"><p>{{ i18n.t('ADMIN.EMPTY_CATEGORIES') }}</p></div>
+        }
+
+        <div class="admin-list">
+          @for (cat of topics(); track cat.id) {
+            <div class="admin-list-item" [class.admin-list-item--editing]="editingCollectionId() === cat.id">
+
+              @if (editingCollectionId() !== cat.id) {
+                <div class="admin-list-item__main">
+                  <div class="admin-list-item__info">
+                    <strong class="admin-list-item__title">{{ cat.name.de }}</strong>
+                    <span class="admin-list-item__meta"><code class="admin-slug">{{ cat.slug }}</code></span>
+                  </div>
+                  <div class="admin-list-item__actions">
+                    <span class="admin-badge admin-badge--type">{{ i18n.t('ADMIN.TYPE_TOPIC') }}</span>
+                    <span class="admin-badge">{{ i18n.t('ADMIN.FILMS_COUNT', { n: cat.videoCount }) }}</span>
+                    <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="startEditCollection(cat)">
+                      {{ i18n.t('ADMIN.EDIT') }}
+                    </button>
+                    @if (collectionDelete.confirmId() === cat.id) {
+                      <button class="admin-btn admin-btn--danger admin-btn--sm"
+                        (click)="confirmDeleteCollection(cat.id, true)"
+                        [disabled]="collectionDelete.deletingId() === cat.id">
+                        {{ i18n.t('ADMIN.DELETE_CONFIRM') }}
+                      </button>
+                      <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="collectionDelete.cancel()">
+                        {{ i18n.t('ADMIN.CANCEL') }}
+                      </button>
+                    } @else {
+                      <button class="admin-btn admin-btn--danger-outline admin-btn--sm"
+                        (click)="collectionDelete.ask(cat.id)"
+                        [disabled]="collectionDelete.deletingId() === cat.id">
+                        {{ collectionDelete.deletingId() === cat.id ? '…' : i18n.t('ADMIN.DELETE') }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (editingCollectionId() === cat.id && editingCollectionState()) {
+                <div class="admin-edit-form">
+                  <h4 class="admin-edit-form__title">{{ i18n.t('ADMIN.EDIT_CAT_TITLE') }}</h4>
+                  <div class="admin-edit-form__field">
+                    <label class="admin-edit-form__label" for="admin-edit-cat-slug">{{ i18n.t('ADMIN.CAT.SLUG_LABEL') }}</label>
+                    <input id="admin-edit-cat-slug" class="admin-edit-form__input"
+                      [ngModel]="editingCollectionState()!.slug"
+                      (ngModelChange)="editingCollectionState.update(s => s ? { ...s, slug: $event } : s)" />
+                  </div>
+                  <div class="admin-edit-form__field">
+                    <label class="admin-edit-form__label" for="admin-edit-cat-order">{{ i18n.t('ADMIN.CAT.ORDER_LABEL') }}</label>
+                    <input id="admin-edit-cat-order" class="admin-edit-form__input admin-edit-form__input--sm" type="number" min="0"
+                      [ngModel]="editingCollectionState()!.sortOrder"
+                      (ngModelChange)="editingCollectionState.update(s => s ? { ...s, sortOrder: +$event } : s)" />
+                  </div>
+                  <fieldset class="admin-edit-form__fieldset">
+                    <legend class="admin-edit-form__legend">{{ i18n.t('ADMIN.CAT.NAME_LEGEND') }}</legend>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-collection-name-de">{{ i18n.t('ADMIN.LANG_DE') }}</label>
+                      <input id="admin-edit-collection-name-de" class="admin-edit-form__input"
+                        [ngModel]="editingCollectionState()!.nameDe"
+                        (ngModelChange)="editingCollectionState.update(s => s ? { ...s, nameDe: $event } : s)" />
+                    </div>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-collection-name-en">{{ i18n.t('ADMIN.LANG_EN') }}</label>
+                      <input id="admin-edit-collection-name-en" class="admin-edit-form__input"
+                        [ngModel]="editingCollectionState()!.nameEn"
+                        (ngModelChange)="editingCollectionState.update(s => s ? { ...s, nameEn: $event } : s)" />
+                    </div>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-collection-name-fa">{{ i18n.t('ADMIN.LANG_FA') }}</label>
+                      <input id="admin-edit-collection-name-fa" class="admin-edit-form__input" dir="rtl"
+                        [ngModel]="editingCollectionState()!.nameFa"
+                        (ngModelChange)="editingCollectionState.update(s => s ? { ...s, nameFa: $event } : s)" />
+                    </div>
+                  </fieldset>
+                  <fieldset class="admin-edit-form__fieldset">
+                    <legend class="admin-edit-form__legend">{{ i18n.t('ADMIN.CAT.DESC_LEGEND') }} {{ i18n.t('ADMIN.OPTIONAL') }}</legend>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-collection-desc-de">{{ i18n.t('ADMIN.LANG_DE') }}</label>
+                      <textarea id="admin-edit-collection-desc-de" class="admin-edit-form__input admin-edit-form__textarea"
+                        [ngModel]="editingCollectionState()!.descDe"
+                        (ngModelChange)="editingCollectionState.update(s => s ? { ...s, descDe: $event } : s)"></textarea>
+                    </div>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-collection-desc-en">{{ i18n.t('ADMIN.LANG_EN') }}</label>
+                      <textarea id="admin-edit-collection-desc-en" class="admin-edit-form__input admin-edit-form__textarea"
+                        [ngModel]="editingCollectionState()!.descEn"
+                        (ngModelChange)="editingCollectionState.update(s => s ? { ...s, descEn: $event } : s)"></textarea>
+                    </div>
+                    <div class="admin-edit-form__lang-row">
+                      <label class="admin-edit-form__lang-label" for="admin-edit-collection-desc-fa">{{ i18n.t('ADMIN.LANG_FA') }}</label>
+                      <textarea id="admin-edit-collection-desc-fa" class="admin-edit-form__input admin-edit-form__textarea" dir="rtl"
+                        [ngModel]="editingCollectionState()!.descFa"
+                        (ngModelChange)="editingCollectionState.update(s => s ? { ...s, descFa: $event } : s)"></textarea>
+                    </div>
+                  </fieldset>
+                  <div class="admin-edit-form__footer">
+                    <button class="admin-btn admin-btn--primary" (click)="saveEditCollection(cat.id, true)"
+                      [disabled]="savingCollectionId() === cat.id">
+                      {{ savingCollectionId() === cat.id ? i18n.t('ADMIN.SAVING') : i18n.t('ADMIN.SAVE') }}
+                    </button>
+                    <button class="admin-btn admin-btn--outline" (click)="cancelEditCollection()">
+                      {{ i18n.t('ADMIN.CANCEL') }}
+                    </button>
+                  </div>
+                </div>
+              }
+
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+  </main>
+</div>

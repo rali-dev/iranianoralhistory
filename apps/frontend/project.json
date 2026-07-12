@@ -4,7 +4,7 @@
   "projectType": "application",
   "prefix": "app",
   "sourceRoot": "apps/frontend/src",
-  "tags": [],
+  "tags": ["scope:app", "platform:frontend"],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
@@ -13,14 +13,17 @@
         "outputPath": "dist/apps/frontend",
         "browser": "apps/frontend/src/main.ts",
         "tsConfig": "apps/frontend/tsconfig.app.json",
-        "inlineStyleLanguage": "scss",
+        "inlineStyleLanguage": "css",
         "assets": [
           {
             "glob": "**/*",
             "input": "apps/frontend/public"
           }
         ],
-        "styles": ["apps/frontend/src/styles.scss"]
+        "styles": [
+          "apps/frontend/src/styles.generated.css"
+        ],
+        "scripts": []
       },
       "configurations": {
         "production": {
@@ -49,7 +52,6 @@
     "serve": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
-      "dependsOn": ["backend:serve"],
       "configurations": {
         "production": {
           "buildTarget": "frontend:build:production"

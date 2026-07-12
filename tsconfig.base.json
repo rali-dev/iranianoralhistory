@@ -15,17 +15,102 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "paths": {
-      "@iranianoralhistory/types": ["./libs/shared/types/src/index.ts"],
-      "@iranianoralhistory/data-access": [
-        "./libs/client/data-access/src/index.ts"
+      "@iranianoralhistory/backend-identity-domain": [
+        "./libs/backend/identity/domain/src/index.ts"
       ],
-      "@iranianoralhistory/validation": [
-        "./libs/shared/validation/src/index.ts"
+      "@iranianoralhistory/backend-identity-application": [
+        "./libs/backend/identity/application/src/index.ts"
       ],
-      "@iranianoralhistory/auth": ["./libs/backend/auth/src/index.ts"],
-      "@iranianoralhistory/database": ["./libs/backend/database/src/index.ts"],
-      "@iranianoralhistory/user": ["./libs/backend/user/src/index.ts"],
-      "@iranianoralhistory/config": ["./libs/backend/auth/src/lib/config.ts"]
+      "@iranianoralhistory/backend-identity-adapters": [
+        "./libs/backend/identity/adapters/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-identity-infrastructure": [
+        "./libs/backend/identity/infrastructure/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-video-domain": [
+        "./libs/backend/video/domain/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-video-application": [
+        "./libs/backend/video/application/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-video-adapters": [
+        "./libs/backend/video/adapters/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-video-infrastructure": [
+        "./libs/backend/video/infrastructure/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-collection-domain": [
+        "./libs/backend/collection/domain/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-collection-application": [
+        "./libs/backend/collection/application/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-collection-adapters": [
+        "./libs/backend/collection/adapters/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-collection-infrastructure": [
+        "./libs/backend/collection/infrastructure/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-favorite-domain": [
+        "./libs/backend/favorite/domain/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-favorite-application": [
+        "./libs/backend/favorite/application/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-favorite-adapters": [
+        "./libs/backend/favorite/adapters/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-favorite-infrastructure": [
+        "./libs/backend/favorite/infrastructure/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-shared-auth-infra": [
+        "./libs/backend/shared/auth-infra/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-shared-database": [
+        "./libs/backend/shared/database/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-shared-storage": [
+        "./libs/backend/shared/storage/src/index.ts"
+      ],
+      "@iranianoralhistory/frontend-identity-data-access": [
+        "./libs/frontend/identity/data-access/src/index.ts"
+      ],
+      "@iranianoralhistory/frontend-video-data-access": [
+        "./libs/frontend/video/data-access/src/index.ts"
+      ],
+      "@iranianoralhistory/frontend-video-feature-catalog": [
+        "./libs/frontend/video/feature-catalog/src/index.ts"
+      ],
+      "@iranianoralhistory/shared-contracts": [
+        "./libs/shared/contracts/src/index.ts"
+      ],
+      "@iranianoralhistory/frontend-shared-i18n": [
+        "./libs/frontend/shared/i18n/src/index.ts"
+      ],
+      "@iranianoralhistory/frontend-video-feature-admin": [
+        "./libs/frontend/video/feature-admin/src/index.ts"
+      ],
+      "@iranianoralhistory/frontend-shared-utils": [
+        "./libs/frontend/shared/utils/src/index.ts"
+      ],
+      "@iranianoralhistory/backend-shared-application": [
+        "./libs/backend/shared/application/src/index.ts"
+      ],
+      "@iranianoralhistory/frontend-shared-ui": [
+        "./libs/frontend/shared/ui/src/index.ts"
+      ],
+      "@iranianoralhistory/frontend-about-feature-about": [
+        "./libs/frontend/about/feature-about/src/index.ts"
+      ],
+      "@iranianoralhistory/frontend-boulorian-feature-boulorian": [
+        "./libs/frontend/boulorian/feature-boulorian/src/index.ts"
+      ],
+      "@iranianoralhistory/frontend-identity-feature-auth": [
+        "./libs/frontend/identity/feature-auth/src/index.ts"
+      ],
+      "@iranianoralhistory/frontend-home-feature-home": [
+        "./libs/frontend/home/feature-home/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

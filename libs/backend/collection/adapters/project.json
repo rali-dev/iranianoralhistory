@@ -1,0 +1,17 @@
+{
+  "name": "backend-collection-adapters",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/backend/collection/adapters/src",
+  "projectType": "library",
+  "tags": ["scope:adapters", "platform:backend"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/backend/collection/adapters/jest.config.cts",
+        "tsConfig": "libs/backend/collection/adapters/tsconfig.spec.json"
+      }
+    }
+  }
+}

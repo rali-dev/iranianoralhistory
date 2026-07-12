@@ -1,0 +1,17 @@
+{
+  "name": "backend-identity-adapters",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/backend/identity/adapters/src",
+  "projectType": "library",
+  "tags": ["scope:adapters", "platform:backend"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/backend/identity/adapters/jest.config.cts",
+        "tsConfig": "libs/backend/identity/adapters/tsconfig.spec.json"
+      }
+    }
+  }
+}

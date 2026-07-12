@@ -1,0 +1,93 @@
+<div class="admin-card">
+  <div class="admin-card__header">
+    <h5 class="admin-card__title">{{ i18n.t('ADMIN.COL.FORM_TITLE') }}</h5>
+  </div>
+  <div class="admin-card__body">
+    @if (form.error()) {
+      <div class="admin-alert admin-alert--danger">{{ form.error() }}</div>
+    }
+    @if (form.success()) {
+      <div class="admin-alert admin-alert--success">{{ form.success() }}</div>
+    }
+
+    <div class="admin-form-grid">
+      <div class="admin-field">
+        <label class="admin-label" for="col-slug">{{ i18n.t('ADMIN.COL.SLUG_LABEL') }}</label>
+        <input id="col-slug" class="admin-input" type="text" [placeholder]="i18n.t('ADMIN.COL.SLUG_PH')"
+          [value]="slug()" (input)="slug.set($any($event.target).value)" />
+        <span class="admin-hint">{{ i18n.t('ADMIN.COL.SLUG_HINT') }}</span>
+      </div>
+
+      @if (!fixedType()) {
+        <div class="admin-field">
+          <label class="admin-label" for="col-type">{{ i18n.t('ADMIN.COL.TYPE_LABEL') }}</label>
+          <select id="col-type" class="admin-input admin-select"
+            [value]="type()" (change)="type.set($any($event.target).value)">
+            <option value="PERSON">{{ i18n.t('ADMIN.TYPE_PERSON') }}</option>
+            <option value="TOPIC">{{ i18n.t('ADMIN.TYPE_TOPIC') }}</option>
+          </select>
+        </div>
+      }
+
+      <div class="admin-field admin-field--order">
+        <label class="admin-label" for="col-order">{{ i18n.t('ADMIN.COL.ORDER_LABEL') }}</label>
+        <input id="col-order" class="admin-input" type="number" min="0" placeholder="0"
+          [value]="sortOrder()" (input)="sortOrder.set(+$any($event.target).value)" />
+      </div>
+    </div>
+
+    <fieldset class="admin-fieldset">
+      <legend class="admin-fieldset__legend">{{ i18n.t('ADMIN.COL.NAME_LEGEND') }}</legend>
+      <div class="admin-lang-grid">
+        <div class="admin-field">
+          <label class="admin-label" for="col-name-de">{{ i18n.t('ADMIN.LANG_DE') }}</label>
+          <input id="col-name-de" class="admin-input" type="text" [placeholder]="i18n.t('ADMIN.LANG_DE')"
+            [value]="nameDe()" (input)="nameDe.set($any($event.target).value)" />
+        </div>
+        <div class="admin-field">
+          <label class="admin-label" for="col-name-en">{{ i18n.t('ADMIN.LANG_EN') }}</label>
+          <input id="col-name-en" class="admin-input" type="text" [placeholder]="i18n.t('ADMIN.LANG_EN')"
+            [value]="nameEn()" (input)="nameEn.set($any($event.target).value)" />
+        </div>
+        <div class="admin-field">
+          <label class="admin-label" for="col-name-fa">{{ i18n.t('ADMIN.LANG_FA') }}</label>
+          <input id="col-name-fa" class="admin-input" type="text" [placeholder]="i18n.t('ADMIN.LANG_FA')" dir="rtl"
+            [value]="nameFa()" (input)="nameFa.set($any($event.target).value)" />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="admin-fieldset">
+      <legend class="admin-fieldset__legend">
+        {{ i18n.t('ADMIN.COL.DESC_LEGEND') }}
+        <span class="admin-optional">{{ i18n.t('ADMIN.OPTIONAL') }}</span>
+      </legend>
+      <div class="admin-lang-grid">
+        <div class="admin-field">
+          <label class="admin-label" for="col-desc-de">{{ i18n.t('ADMIN.LANG_DE') }}</label>
+          <textarea id="col-desc-de" class="admin-input admin-textarea" rows="2"
+            [value]="descDe()" (input)="descDe.set($any($event.target).value)"></textarea>
+        </div>
+        <div class="admin-field">
+          <label class="admin-label" for="col-desc-en">{{ i18n.t('ADMIN.LANG_EN') }}</label>
+          <textarea id="col-desc-en" class="admin-input admin-textarea" rows="2"
+            [value]="descEn()" (input)="descEn.set($any($event.target).value)"></textarea>
+        </div>
+        <div class="admin-field">
+          <label class="admin-label" for="col-desc-fa">{{ i18n.t('ADMIN.LANG_FA') }}</label>
+          <textarea id="col-desc-fa" class="admin-input admin-textarea" rows="2" dir="rtl"
+            [value]="descFa()" (input)="descFa.set($any($event.target).value)"></textarea>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="admin-actions">
+      <button class="admin-btn admin-btn--primary" (click)="submit()" [disabled]="form.isLoading()">
+        @if (form.isLoading()) {
+          <span class="admin-spinner" aria-hidden="true"></span>
+        }
+        {{ form.isLoading() ? i18n.t('ADMIN.COL.SAVING') : i18n.t('ADMIN.COL.SAVE') }}
+      </button>
+    </div>
+  </div>
+</div>

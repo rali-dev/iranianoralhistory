@@ -1,0 +1,615 @@
+<div
+  [dir]="isRtl() ? 'rtl' : 'ltr'"
+  class="max-w-[1400px] mx-auto px-[clamp(1rem,4vw,3rem)] pt-10 pb-20"
+>
+
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center min-h-[50vh] gap-4 text-[var(--text-muted)]" role="status" aria-live="polite">
+      <div class="loading-ring" aria-hidden="true"></div>
+      <span class="sr-only">{{ i18n.t('ARCHIVE.LOADING') }}</span>
+    </div>
+  }
+
+  @if (apiError()) {
+    <div class="catalog-error flex items-center gap-3 py-4 px-5 bg-red-50/60 border border-red-300/80 rounded-[6px] text-red-700 font-[family-name:var(--font-ui)] text-[0.875rem] mb-8" role="alert">
+      <svg class="flex-shrink-0" width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+        <path d="M236.8,188.09,149.35,36.22a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/>
+      </svg>
+      <span><strong>{{ i18n.t('ARCHIVE.ERROR_PREFIX') }}:</strong> {{ apiError() }}</span>
+    </div>
+  }
+
+  <!-- ── Header (always visible once loaded) ── -->
+  @if (!isLoading() && !apiError()) {
+    <header class="flex items-center gap-5 mb-8 flex-wrap bg-white rounded-[12px] p-8 max-[600px]:p-6 border border-[rgba(127,0,0,0.12)] shadow-[0_2px_16px_rgba(127,0,0,0.05)]">
+
+      <!-- Emblem -->
+      <span class="ioh-spin-border ioh-spin-border--lg relative block flex-shrink-0 rounded-full overflow-hidden w-[143px] h-[143px] max-[600px]:w-[92px] max-[600px]:h-[92px] bg-white">
+        <img
+          class="ioh-logo-breathe block w-full h-full object-contain rounded-full"
+          src="assets/brand/RAIOH_OH.png"
+          alt="Research Association for Iranian Oral History – انجمن مطالعات تاریخ شفاهی ایران"
+          aria-hidden="true"
+        />
+      </span>
+
+      <!-- Title + controls -->
+      <div class="flex-1 min-w-0 flex flex-col gap-4">
+
+        <!-- Row: title + filter trigger -->
+        <div class="flex items-center gap-3 flex-wrap">
+          <h1 class="font-[family-name:var(--font-display)] text-[clamp(1.5rem,4vw,2.25rem)] font-bold text-[var(--text-primary)] tracking-[0.02em] leading-[1.2] m-0">
+            {{ showFavoritesOnly() ? i18n.t('ARCHIVE.FAVORITES_TITLE') : i18n.t('ARCHIVE.TITLE') }}
+          </h1>
+
+          <!-- ── Filter Dropdown ──────────────────────────────────── -->
+          <div class="filter-dropdown" [class.filter-dropdown--open]="filterOpen()">
+            <button
+              class="filter-dropdown__trigger"
+              [class.filter-dropdown__trigger--active]="hasActiveFilter()"
+              type="button"
+              (click)="toggleFilter($event)"
+              [attr.aria-expanded]="filterOpen()"
+              aria-haspopup="true"
+            >
+              <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                <path d="M230.6,49.53A15.81,15.81,0,0,0,216,40H40A16,16,0,0,0,28.19,66.76l.08.09L96,148.21V216a16,16,0,0,0,24.87,13.32l32-21.34A16,16,0,0,0,160,194.66V148.21l67.74-81.35.08-.09A15.8,15.8,0,0,0,230.6,49.53ZM144,140.79a8,8,0,0,0-1.94,5.21v48.66l-32,21.33V146a8,8,0,0,0-1.94-5.21L48,60H208Z"/>
+              </svg>
+              @if (activeFilterLabel()) {
+                <span class="filter-dropdown__trigger-label">{{ activeFilterLabel() }}</span>
+              } @else if (showFavoritesOnly()) {
+                <span class="filter-dropdown__trigger-label">{{ i18n.t('ARCHIVE.FILTER_FAVORITES') }}</span>
+              } @else {
+                {{ i18n.t('ARCHIVE.FILTER_BTN') }}
+              }
+              @if (hasActiveFilter()) {
+                <span class="filter-dropdown__active-dot" aria-hidden="true"></span>
+              }
+              <svg class="filter-dropdown__chevron" width="10" height="10" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/>
+              </svg>
+            </button>
+
+            <div class="filter-dropdown__menu" role="menu">
+
+              <!-- ── Panel: Main ─────────────────────────────────── -->
+              @if (collectionPanel() === 'main') {
+                <div class="filter-dropdown__panel">
+                  <button
+                    class="filter-dropdown__option filter-dropdown__option--all"
+                    [class.filter-dropdown__option--active]="!selectedSlug() && !showFavoritesOnly()"
+                    (click)="selectCollection(null)"
+                    type="button"
+                    role="menuitem"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                      <path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H48V48H208Z"/>
+                    </svg>
+                    {{ i18n.t('ARCHIVE.FILTER_ALL') }}
+                  </button>
+
+                  @if (authStore.isAuthenticated()) {
+                    <div class="filter-dropdown__divider" role="separator" aria-hidden="true"></div>
+                    <button
+                      class="filter-dropdown__option filter-dropdown__option--favorites"
+                      [class.filter-dropdown__option--active]="showFavoritesOnly()"
+                      (click)="selectFavoritesFilter()"
+                      type="button"
+                      role="menuitem"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                        <path d="M240,94c0,70-103.79,126.67-108.21,129a8,8,0,0,1-7.58,0C119.79,220.67,16,164,16,94A62.07,62.07,0,0,1,78,32c20.65,0,38.73,8.88,50,23.89C139.27,40.88,157.35,32,178,32A62.07,62.07,0,0,1,240,94Z"/>
+                      </svg>
+                      {{ i18n.t('ARCHIVE.FILTER_FAVORITES') }}
+                      @if (favoritesStore.count() > 0) {
+                        <span class="filter-dropdown__count">{{ favoritesStore.count() }}</span>
+                      }
+                    </button>
+                  }
+
+                  <div class="filter-dropdown__divider" role="separator" aria-hidden="true"></div>
+                  <button
+                    class="filter-dropdown__option filter-dropdown__option--collections"
+                    [class.filter-dropdown__option--active]="selectedSlug() !== null"
+                    (click)="openCollections()"
+                    type="button"
+                    role="menuitem"
+                    aria-haspopup="true"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                      <path d="M216,72H130.67L102.93,51.2a16.12,16.12,0,0,0-9.6-3.2H40A16,16,0,0,0,24,64V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V88A16,16,0,0,0,216,72ZM216,200H40V64H93.33l27.74,20.8A16.12,16.12,0,0,0,130.67,88H216Z"/>
+                    </svg>
+                    {{ i18n.t('ARCHIVE.FILTER_COLLECTIONS') }}
+                    <svg class="filter-dropdown__nav-arrow" width="10" height="10" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                      <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/>
+                    </svg>
+                  </button>
+                </div>
+              }
+
+              <!-- ── Panel: Type Select ──────────────────────────── -->
+              @if (collectionPanel() === 'type-select') {
+                <div class="filter-dropdown__panel">
+                  <button class="filter-dropdown__back" (click)="goBackToMain()" type="button">
+                    <svg width="10" height="10" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                      <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"/>
+                    </svg>
+                    {{ i18n.t('ARCHIVE.FILTER_BACK') }}
+                  </button>
+                  <div class="filter-dropdown__divider" role="separator" aria-hidden="true"></div>
+                  @if (collectionsLoading()) {
+                    <div class="filter-dropdown__skeleton-group" aria-hidden="true">
+                      <div class="filter-dropdown__skeleton filter-dropdown__skeleton--item"></div>
+                      <div class="filter-dropdown__skeleton filter-dropdown__skeleton--item filter-dropdown__skeleton--short"></div>
+                    </div>
+                  } @else {
+                    @if (personCollections().length > 0) {
+                      <button
+                        class="filter-dropdown__option filter-dropdown__option--type-nav"
+                        (click)="openPersons()"
+                        type="button"
+                        role="menuitem"
+                        aria-haspopup="true"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                          <path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"/>
+                        </svg>
+                        {{ i18n.t('ARCHIVE.FILTER_PERSONS') }}
+                        <span class="filter-dropdown__count">{{ personCollections().length }}</span>
+                        <svg class="filter-dropdown__nav-arrow" width="10" height="10" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                          <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/>
+                        </svg>
+                      </button>
+                    }
+                    @if (topicCollections().length > 0) {
+                      <button
+                        class="filter-dropdown__option filter-dropdown__option--type-nav"
+                        (click)="openTopics()"
+                        type="button"
+                        role="menuitem"
+                        aria-haspopup="true"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                          <path d="M243.31,90.91l-128.4-64.2a16,16,0,0,0-14.62,0L12.69,90.91A15.95,15.95,0,0,0,4,105.38V208a8,8,0,0,0,16,0V165.93l64,32V208a8,8,0,0,0,16,0V197.93l72.69,36.35A16,16,0,0,0,180,236a16.29,16.29,0,0,0,7.29-1.74l56-28A16,16,0,0,0,252,192V105.38A15.95,15.95,0,0,0,243.31,90.91ZM100,189.29l-80-40V111l80,40Zm56,0V151l24,12v38.29ZM236,192l-56,28V151l56-28Z"/>
+                        </svg>
+                        {{ i18n.t('ARCHIVE.FILTER_TOPICS') }}
+                        <span class="filter-dropdown__count">{{ topicCollections().length }}</span>
+                        <svg class="filter-dropdown__nav-arrow" width="10" height="10" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                          <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/>
+                        </svg>
+                      </button>
+                    }
+                  }
+                </div>
+              }
+
+              <!-- ── Panel: Persons ──────────────────────────────── -->
+              @if (collectionPanel() === 'persons') {
+                <div class="filter-dropdown__panel">
+                  <button class="filter-dropdown__back" (click)="goBackToTypeSelect()" type="button">
+                    <svg width="10" height="10" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                      <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"/>
+                    </svg>
+                    {{ i18n.t('ARCHIVE.FILTER_BACK') }}
+                  </button>
+                  <div class="filter-dropdown__divider" role="separator" aria-hidden="true"></div>
+                  <div class="filter-dropdown__section-header" aria-hidden="true">
+                    <svg width="11" height="11" viewBox="0 0 256 256" fill="currentColor">
+                      <path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"/>
+                    </svg>
+                    <span class="filter-dropdown__section-label">{{ i18n.t('ARCHIVE.FILTER_PERSONS') }}</span>
+                  </div>
+                  @if (collectionsLoading()) {
+                    <div class="filter-dropdown__skeleton-group" aria-hidden="true">
+                      <div class="filter-dropdown__skeleton filter-dropdown__skeleton--item"></div>
+                      <div class="filter-dropdown__skeleton filter-dropdown__skeleton--item filter-dropdown__skeleton--short"></div>
+                      <div class="filter-dropdown__skeleton filter-dropdown__skeleton--item"></div>
+                    </div>
+                  }
+                  @for (col of personCollections(); track col.id) {
+                    <button
+                      class="filter-dropdown__option filter-dropdown__option--person"
+                      [class.filter-dropdown__option--active]="selectedSlug() === col.slug"
+                      (click)="selectCollection(col.slug)"
+                      type="button"
+                      role="menuitem"
+                    >
+                      {{ getCollectionName(col) }}
+                      <span class="filter-dropdown__count">{{ col.videoCount }}</span>
+                    </button>
+                  }
+                </div>
+              }
+
+              <!-- ── Panel: Topics ───────────────────────────────── -->
+              @if (collectionPanel() === 'topics') {
+                <div class="filter-dropdown__panel">
+                  <button class="filter-dropdown__back" (click)="goBackToTypeSelect()" type="button">
+                    <svg width="10" height="10" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                      <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"/>
+                    </svg>
+                    {{ i18n.t('ARCHIVE.FILTER_BACK') }}
+                  </button>
+                  <div class="filter-dropdown__divider" role="separator" aria-hidden="true"></div>
+                  <div class="filter-dropdown__section-header" aria-hidden="true">
+                    <svg width="11" height="11" viewBox="0 0 256 256" fill="currentColor">
+                      <path d="M243.31,90.91l-128.4-64.2a16,16,0,0,0-14.62,0L12.69,90.91A15.95,15.95,0,0,0,4,105.38V208a8,8,0,0,0,16,0V165.93l64,32V208a8,8,0,0,0,16,0V197.93l72.69,36.35A16,16,0,0,0,180,236a16.29,16.29,0,0,0,7.29-1.74l56-28A16,16,0,0,0,252,192V105.38A15.95,15.95,0,0,0,243.31,90.91ZM100,189.29l-80-40V111l80,40Zm56,0V151l24,12v38.29ZM236,192l-56,28V151l56-28Z"/>
+                    </svg>
+                    <span class="filter-dropdown__section-label">{{ i18n.t('ARCHIVE.FILTER_TOPICS') }}</span>
+                  </div>
+                  @if (collectionsLoading()) {
+                    <div class="filter-dropdown__skeleton-group" aria-hidden="true">
+                      <div class="filter-dropdown__skeleton filter-dropdown__skeleton--item"></div>
+                      <div class="filter-dropdown__skeleton filter-dropdown__skeleton--item filter-dropdown__skeleton--short"></div>
+                      <div class="filter-dropdown__skeleton filter-dropdown__skeleton--item"></div>
+                    </div>
+                  }
+                  @for (col of topicCollections(); track col.id) {
+                    <button
+                      class="filter-dropdown__option filter-dropdown__option--topic"
+                      [class.filter-dropdown__option--active]="selectedSlug() === col.slug"
+                      (click)="selectCollection(col.slug)"
+                      type="button"
+                      role="menuitem"
+                    >
+                      {{ getCollectionName(col) }}
+                      <span class="filter-dropdown__count">{{ col.videoCount }}</span>
+                    </button>
+                  }
+                </div>
+              }
+
+            </div>
+          </div>
+          <!-- ── /Filter Dropdown ─────────────────────────────────── -->
+        </div>
+
+        <!-- ── Search Bar ──────────────────────────────────────── -->
+        <div
+          class="catalog-search"
+          role="search"
+          [class.catalog-search--has-value]="!!searchQuery().trim()"
+        >
+          <svg
+            class="catalog-search__icon"
+            width="16" height="16"
+            viewBox="0 0 256 256"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M229.66,218.34l-50.07-50.07a88.21,88.21,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.31ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"/>
+          </svg>
+          <input
+            class="catalog-search__input catalog-search-input"
+            type="search"
+            [placeholder]="i18n.t('ARCHIVE.SEARCH_PH')"
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+            [attr.aria-label]="i18n.t('ARCHIVE.SEARCH_PH')"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          @if (searchQuery().trim()) {
+            <div class="catalog-search__end">
+              <span class="catalog-search__count" aria-live="polite" aria-atomic="true">
+                {{ videos().length }}
+              </span>
+              <button
+                class="catalog-search__clear"
+                type="button"
+                (click)="clearSearch()"
+                [attr.aria-label]="i18n.t('ARCHIVE.SEARCH_CLEAR')"
+              >
+                <svg width="11" height="11" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                  <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/>
+                </svg>
+              </button>
+            </div>
+          }
+        </div>
+        <!-- ── /Search Bar ──────────────────────────────────────── -->
+
+      </div>
+    </header>
+  }
+
+  @if (!isLoading() && !apiError() && videos().length === 0) {
+    <div class="catalog-empty flex flex-col items-center justify-center min-h-[50vh] gap-4 text-[var(--text-muted)] font-[family-name:var(--font-ui)] text-[0.9375rem]">
+      <svg width="48" height="48" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+        <path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Z"/>
+      </svg>
+      <p class="m-0">{{ emptyMessage() }}</p>
+    </div>
+  }
+
+  <!-- ── Grid View ─────────────────────────────────────────── -->
+  @if (!isLoading() && !apiError() && !isListView() && videos().length > 0) {
+    <div class="video-grid">
+      @for (video of videos(); track video.id) {
+        <article
+          class="video-card rounded-[10px]"
+          (click)="openModal(video)"
+          (keydown)="handleCardKey($event, video)"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="i18n.t('ARCHIVE.PLAY_LABEL', { title: getTitle(video) })"
+        >
+          <div class="video-card__thumb rounded-t-[10px]">
+            @if (thumbnails()[video.vimeoId]) {
+              <img [src]="thumbnails()[video.vimeoId]" [alt]="getTitle(video)" loading="lazy" />
+            } @else {
+              <img src="assets/brand/RAIOH_OH.png" class="video-card__placeholder-logo" alt="" aria-hidden="true" />
+            }
+            <div class="video-card__play" aria-hidden="true">
+              <svg width="30" height="30" viewBox="0 0 256 256" fill="currentColor">
+                <path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"/>
+              </svg>
+            </div>
+            @if (authStore.isAuthenticated()) {
+              <button
+                class="video-card__favorite-btn rounded-full"
+                [class.video-card__favorite-btn--active]="isFavorite(video.id)"
+                (click)="toggleFavorite($event, video.id)"
+                [attr.aria-label]="isFavorite(video.id) ? i18n.t('ARCHIVE.FAV_REMOVE') : i18n.t('ARCHIVE.FAV_ADD')"
+                type="button"
+              >
+                @if (isFavorite(video.id)) {
+                  <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                    <path d="M240,94c0,70-103.79,126.67-108.21,129a8,8,0,0,1-7.58,0C119.79,220.67,16,164,16,94A62.07,62.07,0,0,1,78,32c20.65,0,38.73,8.88,50,23.89C139.27,40.88,157.35,32,178,32A62.07,62.07,0,0,1,240,94Z"/>
+                  </svg>
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                    <path d="M178,32c-20.65,0-38.73,8.88-50,23.89C116.73,40.88,98.65,32,78,32A62.07,62.07,0,0,0,16,94c0,70,103.79,126.67,108.21,129a8,8,0,0,0,7.58,0C136.21,220.67,240,164,240,94A62.07,62.07,0,0,0,178,32Zm-4.44,135.6C165.38,172.47,140,186.83,128,193.6c-12-6.77-37.38-21.13-45.56-26C71.31,160.27,32,135.37,32,94A46.06,46.06,0,0,1,78,48c19.45,0,35.78,10.36,42.6,27a8,8,0,0,0,14.8,0c6.82-16.67,23.15-27,42.6-27a46.06,46.06,0,0,1,46,46C224,135.37,184.69,160.27,173.56,167.6Z"/>
+                  </svg>
+                }
+              </button>
+            }
+          </div>
+          <div class="video-card__body">
+            <h2 class="video-card__title">{{ getTitle(video) }}</h2>
+            @if (video.collections.length > 0) {
+              <div class="video-card__collections">
+                @for (col of video.collections; track col.id) {
+                  <span class="video-tag">{{ getCollectionName(col) }}</span>
+                }
+              </div>
+            }
+            @if (video.documents.length > 0) {
+              <button
+                class="video-card__docs-btn"
+                type="button"
+                (click)="openDocs($event, video)"
+                [attr.aria-label]="i18n.t('ARCHIVE.DOCS_OPEN_LABEL', { title: getTitle(video) })"
+              >
+                <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                  <path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Z"/>
+                </svg>
+                <span class="video-card__docs-btn__count">
+                  {{ video.documents.length }}&nbsp;{{ i18n.t(video.documents.length === 1 ? 'ARCHIVE.DOC_ONE' : 'ARCHIVE.DOCS') }}
+                </span>
+                <span class="video-card__docs-btn__label">{{ i18n.t('ARCHIVE.DOCS_OPEN') }}</span>
+                <svg class="video-card__docs-btn__arrow" width="11" height="11" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                  <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/>
+                </svg>
+              </button>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  <!-- ── List View (Favorites) ──────────────────────────────── -->
+  @if (!isLoading() && !apiError() && isListView() && videos().length > 0) {
+    <div class="video-list" role="list">
+      @for (video of videos(); track video.id) {
+        <div
+          class="video-list-item rounded-[8px]"
+          role="listitem"
+          (click)="openModal(video)"
+          (keydown)="handleCardKey($event, video)"
+          tabindex="0"
+          [attr.aria-label]="i18n.t('ARCHIVE.PLAY_LABEL', { title: getTitle(video) })"
+        >
+          <div class="video-list-item__thumb">
+            @if (thumbnails()[video.vimeoId]) {
+              <img [src]="thumbnails()[video.vimeoId]" [alt]="getTitle(video)" loading="lazy" />
+            } @else {
+              <img src="assets/brand/RAIOH_OH.png" class="video-list-item__placeholder-logo" alt="" aria-hidden="true" />
+            }
+            <div class="video-list-item__play" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 256 256" fill="currentColor">
+                <path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="video-list-item__info">
+            <h2 class="video-list-item__title">{{ getTitle(video) }}</h2>
+            <div class="video-list-item__meta">
+              @if (video.collections.length > 0) {
+                @for (col of video.collections; track col.id) {
+                  <span class="video-tag">{{ getCollectionName(col) }}</span>
+                }
+              }
+              @if (video.documents.length > 0) {
+                <button
+                  class="video-list-item__docs-btn"
+                  type="button"
+                  (click)="openDocs($event, video)"
+                  [attr.aria-label]="i18n.t('ARCHIVE.DOCS_OPEN_LABEL', { title: getTitle(video) })"
+                >
+                  <svg width="11" height="11" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                    <path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Z"/>
+                  </svg>
+                  {{ video.documents.length }}&nbsp;{{ i18n.t(video.documents.length === 1 ? 'ARCHIVE.DOC_ONE' : 'ARCHIVE.DOCS') }}
+                </button>
+              }
+            </div>
+          </div>
+
+          @if (authStore.isAuthenticated()) {
+            <button
+              class="video-card__favorite-btn rounded-full"
+              [class.video-card__favorite-btn--active]="isFavorite(video.id)"
+              (click)="toggleFavorite($event, video.id)"
+              [attr.aria-label]="isFavorite(video.id) ? i18n.t('ARCHIVE.FAV_REMOVE') : i18n.t('ARCHIVE.FAV_ADD')"
+              type="button"
+              style="position: static; margin-inline-end: 0.75rem; flex-shrink: 0;"
+            >
+              @if (isFavorite(video.id)) {
+                <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                  <path d="M240,94c0,70-103.79,126.67-108.21,129a8,8,0,0,1-7.58,0C119.79,220.67,16,164,16,94A62.07,62.07,0,0,1,78,32c20.65,0,38.73,8.88,50,23.89C139.27,40.88,157.35,32,178,32A62.07,62.07,0,0,1,240,94Z"/>
+                </svg>
+              } @else {
+                <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                  <path d="M178,32c-20.65,0-38.73,8.88-50,23.89C116.73,40.88,98.65,32,78,32A62.07,62.07,0,0,0,16,94c0,70,103.79,126.67,108.21,129a8,8,0,0,0,7.58,0C136.21,220.67,240,164,240,94A62.07,62.07,0,0,0,178,32Zm-4.44,135.6C165.38,172.47,140,186.83,128,193.6c-12-6.77-37.38-21.13-45.56-26C71.31,160.27,32,135.37,32,94A46.06,46.06,0,0,1,78,48c19.45,0,35.78,10.36,42.6,27a8,8,0,0,0,14.8,0c6.82-16.67,23.15-27,42.6-27a46.06,46.06,0,0,1,46,46C224,135.37,184.69,160.27,173.56,167.6Z"/>
+                </svg>
+              }
+            </button>
+          }
+
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- ── Document Drawer ──────────────────────────────────── -->
+@if (docDrawerVideo(); as dv) {
+  <div
+    class="doc-drawer-backdrop"
+    (click)="closeDocs()"
+    aria-hidden="true"
+  ></div>
+
+  <aside
+    class="doc-drawer"
+    [dir]="isRtl() ? 'rtl' : 'ltr'"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="i18n.t('ARCHIVE.DOCS_PANEL_TITLE')"
+  >
+    <div class="doc-drawer__header">
+      <div class="doc-drawer__header-meta">
+        <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+          <path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Z"/>
+        </svg>
+        <span class="doc-drawer__panel-label">{{ i18n.t('ARCHIVE.DOCS_PANEL_TITLE') }}</span>
+        <span class="doc-drawer__count-badge">{{ dv.documents.length }}</span>
+      </div>
+      <h3 class="doc-drawer__video-title">{{ getTitle(dv) }}</h3>
+      <button
+        class="doc-drawer__close"
+        type="button"
+        (click)="closeDocs()"
+        [attr.aria-label]="i18n.t('ARCHIVE.DOCS_CLOSE')"
+      >
+        <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+          <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/>
+        </svg>
+      </button>
+    </div>
+
+    <ul class="doc-drawer__list" role="list">
+      @for (doc of dv.documents; track doc.id) {
+        <li role="listitem">
+          <a
+            class="doc-drawer__link"
+            [href]="'/api/documents/' + doc.id + '/signed-url'"
+            target="_blank"
+            rel="noopener noreferrer"
+            [attr.aria-label]="doc.title"
+          >
+            <span class="doc-drawer__link-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor">
+                <path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Z"/>
+              </svg>
+            </span>
+            <span class="doc-drawer__link-title">{{ doc.title }}</span>
+            <span class="doc-drawer__link-ext" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 256 256" fill="currentColor">
+                <path d="M224,104a8,8,0,0,1-16,0V75.31l-82.34,82.35a8,8,0,0,1-11.32-11.32L196.69,64H168a8,8,0,0,1,0-16h48a8,8,0,0,1,8,8Zm-40,24a8,8,0,0,0-8,8v72H48V80h72a8,8,0,0,0,0-16H48A16,16,0,0,0,32,80V208a16,16,0,0,0,16,16H176a16,16,0,0,0,16-16V136A8,8,0,0,0,184,128Z"/>
+              </svg>
+            </span>
+          </a>
+        </li>
+      }
+    </ul>
+  </aside>
+}
+
+<!-- ── Video Modal (fullscreen) ──────────────────────────── -->
+@if (modalOpen()) {
+  <div class="ioh-modal-backdrop" (click)="closeModal()" aria-hidden="true"></div>
+  <div class="ioh-modal-wrap" role="dialog" aria-modal="true" [attr.aria-label]="i18n.t('ARCHIVE.CLOSE')">
+    <div class="ioh-modal">
+      <div class="ioh-modal__header">
+        <h2 class="ioh-modal__title" id="videoModalLabel">{{ getTitle(selectedVideo()) }}</h2>
+        <div class="ioh-modal__actions">
+          <button
+            type="button"
+            class="ioh-modal__fullscreen-btn"
+            [attr.aria-label]="i18n.t('ARCHIVE.FULLSCREEN')"
+            onclick="document.getElementById('videoIframe')?.requestFullscreen()"
+          >
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+              <path d="M216,48H160a8,8,0,0,0,0,16h36.69L146.34,114.34a8,8,0,1,0,11.32,11.32L208,75.31V112a8,8,0,0,0,16,0V56A8,8,0,0,0,216,48ZM114.34,141.66a8,8,0,0,0-11.32,0L48,197V160a8,8,0,0,0-16,0v56a8,8,0,0,0,8,8H96a8,8,0,0,0,0-16H59.31l55.35-55.34A8,8,0,0,0,114.34,141.66Z"/>
+            </svg>
+            {{ i18n.t('ARCHIVE.FULLSCREEN') }}
+          </button>
+          <button
+            type="button"
+            class="ioh-modal__close"
+            (click)="closeModal()"
+            [attr.aria-label]="i18n.t('ARCHIVE.CLOSE')"
+          >
+            <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+              <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="ioh-modal__body">
+        @if (selectedVideo(); as v) {
+          <div class="ioh-modal__video-wrap">
+            <iframe
+              id="videoIframe"
+              [src]="safeEmbedUrl()"
+              frameborder="0"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowfullscreen
+              [title]="getTitle(v)"
+            ></iframe>
+          </div>
+          @if (getDescription(v); as desc) {
+            <p class="ioh-modal__desc">{{ desc }}</p>
+          }
+          @if (v.documents.length > 0) {
+            <div class="ioh-modal__docs">
+              <h3 class="ioh-modal__docs-title">{{ i18n.t('ARCHIVE.DOCS') }}</h3>
+              <ul class="ioh-modal__doc-list">
+                @for (doc of v.documents; track doc.id) {
+                  <li>
+                    <a
+                      [href]="'/api/documents/' + doc.id + '/signed-url'"
+                      target="_blank"
+                      rel="noopener"
+                      class="ioh-modal__doc-link"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                        <path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Z"/>
+                      </svg>
+                      {{ doc.title }}
+                    </a>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}

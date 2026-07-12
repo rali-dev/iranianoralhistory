@@ -2,6 +2,7 @@
   "name": "backend-e2e",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
+  "tags": ["platform:backend"],
   "implicitDependencies": ["backend"],
   "targets": {
     "e2e": {
@@ -10,8 +11,7 @@
       "options": {
         "jestConfig": "apps/backend-e2e/jest.config.cts",
         "passWithNoTests": true
-      },
-      "dependsOn": ["backend:build", "backend:serve"]
+      }
     }
   }
 }

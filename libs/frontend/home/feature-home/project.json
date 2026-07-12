@@ -1,0 +1,21 @@
+{
+  "name": "frontend-home-feature-home",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/home/feature-home/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": ["scope:feature", "platform:frontend"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/frontend/home/feature-home/jest.config.cts",
+        "tsConfig": "libs/frontend/home/feature-home/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

@@ -1,0 +1,35 @@
+<div class="admin-card">
+  <div class="admin-card__header">
+    <h6 class="admin-card__title">{{ i18n.t('ADMIN.DOC.FORM_TITLE') }}</h6>
+  </div>
+  <div class="admin-card__body">
+    @if (form.error()) {
+      <div class="admin-alert admin-alert--danger">{{ form.error() }}</div>
+    }
+    @if (form.success()) {
+      <div class="admin-alert admin-alert--success">{{ form.success() }}</div>
+    }
+
+    <div class="admin-doc-form-row">
+      <div class="admin-field">
+        <label class="admin-label" for="doc-add-title">{{ i18n.t('ADMIN.DOC.TITLE_LABEL') }}</label>
+        <input id="doc-add-title" class="admin-input" type="text" [placeholder]="i18n.t('ADMIN.DOC.TITLE_PH')"
+          [value]="title()" (input)="title.set($any($event.target).value)" />
+      </div>
+      <div class="admin-field admin-field--s3">
+        <label class="admin-label" for="doc-add-storage">{{ i18n.t('ADMIN.DOC.STORAGE_LABEL') }}</label>
+        <input id="doc-add-storage" class="admin-input" type="text" [placeholder]="i18n.t('ADMIN.DOC.STORAGE_PH')"
+          [value]="storagePath()" (input)="storagePath.set($any($event.target).value)" />
+      </div>
+      <div class="admin-field admin-field--action">
+        <label class="admin-label" for="doc-add-submit">&nbsp;</label>
+        <button id="doc-add-submit" class="admin-btn admin-btn--outline" (click)="submit()" [disabled]="form.isLoading()">
+          @if (form.isLoading()) {
+            <span class="admin-spinner admin-spinner--outline" aria-hidden="true"></span>
+          }
+          {{ form.isLoading() ? i18n.t('ADMIN.DOC.SAVING') : i18n.t('ADMIN.DOC.SAVE') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

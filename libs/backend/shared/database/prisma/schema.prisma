@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../../../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CollectionType {
+  PERSON
+  TOPIC
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id                 String         @id @default(uuid())
+  email              String         @unique
+  hashedPassword     String
+  hashedRefreshToken String?
+  role               UserRole       @default(USER)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt()
+  favorites          UserFavorite[]
+  passwordResetToken PasswordResetToken?
+}
+
+model Video {
+  id          String            @id @default(uuid())
+  vimeoId     String            @unique
+  titleDe     String
+  titleEn     String
+  titleFa     String
+  descDe      String?
+  descEn      String?
+  descFa      String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt()
+  documents   Document[]
+  collections VideoCollection[]
+  favorites   UserFavorite[]
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  title       String
+  storagePath String
+  videoId     String
+  video       Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model Collection {
+  id        String            @id @default(uuid())
+  slug      String            @unique
+  type      CollectionType
+  nameDe    String
+  nameEn    String
+  nameFa    String
+  descDe    String?
+  descEn    String?
+  descFa    String?
+  sortOrder Int               @default(0)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  videos    VideoCollection[]
+}
+
+model VideoCollection {
+  videoId      String
+  collectionId String
+  video        Video      @relation(fields: [videoId],      references: [id], onDelete: Cascade)
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, collectionId])
+}
+
+model UserFavorite {
+  userId    String
+  videoId   String
+  user      User     @relation(fields: [userId],  references: [id], onDelete: Cascade)
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, videoId])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  tokenHash String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

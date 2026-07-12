@@ -1,0 +1,882 @@
+<div
+  class="min-h-[calc(100dvh-var(--ioh-nav-h))]"
+  style="background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(127,0,0,0.05) 0%, transparent 60%), var(--bg-deep);"
+  [attr.dir]="i18n.isRtl() ? 'rtl' : 'ltr'"
+>
+
+  <!-- Page Header -->
+  <header class="bg-[var(--bg-primary)] border-b border-[var(--border)] py-12 px-8 pb-10 max-[767px]:py-8 max-[767px]:px-4 max-[767px]:pb-6">
+    <div class="max-w-[1200px] mx-auto flex items-center gap-8 max-[600px]:gap-4 rtl:flex-row-reverse bg-[var(--bg-surface)] rounded-[12px] p-8 max-[600px]:p-6 border border-[rgba(127,0,0,0.12)] shadow-[0_2px_16px_rgba(127,0,0,0.05)]">
+
+      <div class="ioh-spin-border ioh-spin-border--lg relative flex-shrink-0 w-[143px] h-[143px] max-[600px]:w-[88px] max-[600px]:h-[88px] rounded-full overflow-hidden bg-white">
+        <img
+          class="ioh-logo-breathe block w-full h-full object-contain rounded-full"
+          src="assets/brand/RAIOH_OH.png"
+          alt="Research Association for Iranian Oral History – انجمن مطالعات تاریخ شفاهی ایران"
+          aria-hidden="true"
+        />
+      </div>
+
+      <div class="flex-1 min-w-0">
+        <span class="block font-[family-name:var(--font-ui)] text-[0.7rem] tracking-[0.01em] text-[#7F0000] mb-2">RAIOH</span>
+        <h1 class="font-[family-name:var(--font-ui)] text-[clamp(1.75rem,4vw,2.75rem)] font-bold text-[#7F0000] mt-2 mb-6 tracking-[-0.02em] rtl:font-[family-name:var(--font-fa-display)] rtl:font-normal rtl:text-[clamp(2rem,4.5vw,3.25rem)] rtl:tracking-normal">{{ i18n.t('ABOUT.PAGE_TITLE') }}</h1>
+        <div class="w-12 h-[2px] bg-[#7F0000] rtl:mr-0 rtl:ml-auto" aria-hidden="true"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout: Sidebar + Content -->
+  <div class="grid gap-0 max-w-[1200px] mx-auto px-8 pb-16 min-h-[70vh] items-start grid-cols-1 min-[768px]:grid-cols-[240px_1fr] max-[767px]:px-4 max-[767px]:pb-12">
+
+    <!-- Sidebar navigation -->
+    <aside
+      class="sticky top-20 pt-10 pr-6 border-r border-[var(--border)] rtl:pr-0 rtl:pl-6 rtl:border-r-0 rtl:border-l max-[767px]:static max-[767px]:border-r-0 max-[767px]:border-b max-[767px]:pr-0 max-[767px]:pl-0 max-[767px]:pt-6 max-[767px]:pb-4 max-[767px]:rtl:border-l-0"
+    >
+      <nav role="navigation" [attr.aria-label]="i18n.t('ABOUT.PAGE_TITLE')">
+        <ul class="list-none m-0 p-0 flex flex-col gap-0">
+          @for (section of visibleSections(); track section.key) {
+            <li>
+              <button
+                type="button"
+                class="flex items-center gap-[0.625rem] w-full py-[0.625rem] px-3 border-0 bg-[var(--bg-surface)] text-[var(--text-secondary)] font-[family-name:var(--font-ui)] text-[0.8125rem] font-[500] tracking-[0.01em] text-left cursor-pointer transition-[color,background] duration-200 rounded-[4px] hover:text-[#7F0000] hover:bg-[var(--accent-glow)] focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px] rtl:text-right rtl:flex-row-reverse rtl:font-[family-name:var(--font-fa)] rtl:text-[0.97rem] rtl:tracking-normal"
+                [style.color]="activeSection() === section.key ? 'var(--accent)' : null"
+                (click)="setSection(section.key)"
+              >
+                <span
+                  class="flex-shrink-0 w-[3px] h-[14px] rounded-[2px] opacity-0 transition-[opacity,background] duration-200"
+                  [style.background-color]="activeSection() === section.key ? 'var(--accent)' : null"
+                  [style.opacity]="activeSection() === section.key ? '1' : null"
+                  aria-hidden="true"
+                ></span>
+                {{ i18n.t(section.navKey) }}
+              </button>
+            </li>
+          }
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main content area -->
+    <main class="pt-10 pl-8 max-[767px]:pt-6 max-[767px]:pl-0 rtl:pl-0 rtl:pr-8 max-[767px]:rtl:pr-0" role="main">
+
+      <!-- shared article inner layout via CSS variables to avoid repetition -->
+
+      <!-- ── OVERVIEW ─────────────────────────────────────────── -->
+      @if (activeSection() === 'overview') {
+        <article class="about-section-anim">
+          <h2 class="font-[family-name:var(--font-ui)] text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-[#7F0000] m-0 mb-3 tracking-[-0.01em] rtl:font-[family-name:var(--font-fa-display)] rtl:font-normal rtl:tracking-normal">{{ i18n.t('ABOUT.OVERVIEW.HEADING') }}</h2>
+          <div class="w-10 h-[2px] bg-[#7F0000] mb-7" aria-hidden="true"></div>
+
+          <!-- History sub-heading (FA only) -->
+          @if (i18n.t('ABOUT.OVERVIEW.SEC_HISTORY')) {
+            <h3 class="font-[family-name:var(--font-fa-display)] text-[1.1rem] font-bold text-[#7F0000] m-0 mb-4 mt-2 pb-2 border-b border-[var(--border)]">{{ i18n.t('ABOUT.OVERVIEW.SEC_HISTORY') }}</h3>
+          }
+
+          <!-- Main paragraphs P1–P5 -->
+          @if (i18n.t('ABOUT.OVERVIEW.P1')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">
+              @if (i18n.isRtl()) {
+                {{ i18n.t('ABOUT.OVERVIEW.P1_A') }}<button
+                  type="button"
+                  class="text-[#7F0000] underline decoration-dotted underline-offset-[3px] decoration-[#7F0000]/50 cursor-pointer bg-transparent border-0 p-0 font-[family-name:var(--font-fa)] text-[1rem] leading-[2] transition-colors duration-200 hover:text-[#A30000] hover:decoration-[#A30000]/80 focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px] rounded-[2px]"
+                  (click)="openGhaniImage()"
+                  aria-label="مشاهده عکس: غنی بلوریان و حمید احمدی – پراگ، آخر بهار ۱۹۸۶"
+                >{{ i18n.t('ABOUT.OVERVIEW.P1_LINK') }}</button>{{ i18n.t('ABOUT.OVERVIEW.P1_B') }}
+              } @else {
+                {{ i18n.t('ABOUT.OVERVIEW.P1') }}
+              }
+            </p>
+          }
+          @if (i18n.t('ABOUT.OVERVIEW.P2')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">
+              @if (i18n.isRtl()) {
+                {{ i18n.t('ABOUT.OVERVIEW.P2_A') }}<button
+                  type="button"
+                  class="text-[#7F0000] underline decoration-dotted underline-offset-[3px] decoration-[#7F0000]/50 cursor-pointer bg-transparent border-0 p-0 font-[family-name:var(--font-fa)] text-[1rem] leading-[2] transition-colors duration-200 hover:text-[#A30000] hover:decoration-[#A30000]/80 focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px] rounded-[2px]"
+                  (click)="openConferencePdf()"
+                  aria-label="مشاهده سند: نهمین کنفرانس بین‌المللی تاریخ‌دانان شفاهی — گوتنبرگ ۱۹۹۶"
+                >{{ i18n.t('ABOUT.OVERVIEW.P2_LINK') }}</button>{{ i18n.t('ABOUT.OVERVIEW.P2_B') }}
+              } @else {
+                {{ i18n.t('ABOUT.OVERVIEW.P2') }}
+              }
+            </p>
+          }
+          @if (i18n.t('ABOUT.OVERVIEW.P3')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.OVERVIEW.P3') }}</p>
+          }
+          @if (i18n.t('ABOUT.OVERVIEW.P4')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.OVERVIEW.P4') }}</p>
+          }
+          @if (i18n.t('ABOUT.OVERVIEW.P5')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.OVERVIEW.P5') }}</p>
+          }
+
+          <!-- Narrators statistics -->
+          @if (i18n.t('ABOUT.OVERVIEW.SEC_STATS')) {
+            <div class="mt-8 mb-2">
+              <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-semibold text-[var(--text-primary)] mb-3 rtl:font-[family-name:var(--font-fa)] rtl:text-[1.05rem]">{{ i18n.t('ABOUT.OVERVIEW.SEC_STATS') }}</p>
+              @if (i18n.t('ABOUT.OVERVIEW.STAT_INTRO')) {
+                <p class="font-[family-name:var(--font-ui)] text-[0.875rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-3 rtl:font-[family-name:var(--font-fa)] rtl:text-[0.95rem] rtl:leading-[2]">{{ i18n.t('ABOUT.OVERVIEW.STAT_INTRO') }}</p>
+              }
+              <ul class="list-none p-0 mb-6">
+                @for (stat of [
+                  'ABOUT.OVERVIEW.STAT_1',
+                  'ABOUT.OVERVIEW.STAT_2',
+                  'ABOUT.OVERVIEW.STAT_3',
+                  'ABOUT.OVERVIEW.STAT_4',
+                  'ABOUT.OVERVIEW.STAT_5',
+                  'ABOUT.OVERVIEW.STAT_6',
+                  'ABOUT.OVERVIEW.STAT_7',
+                  'ABOUT.OVERVIEW.STAT_8'
+                ]; track stat) {
+                  @if (i18n.t(stat)) {
+                    <li class="flex items-baseline gap-[0.625rem] py-[0.4rem] font-[family-name:var(--font-ui)] text-[0.9rem] font-normal text-[var(--text-secondary)] leading-[1.6] border-b border-[var(--border)] before:content-[''] before:flex-shrink-0 before:w-1 before:h-1 before:bg-[#7F0000] before:rounded-full before:mt-[0.15em] rtl:font-[family-name:var(--font-fa)] rtl:text-[0.95rem] rtl:leading-[1.85]">{{ i18n.t(stat) }}</li>
+                  }
+                }
+              </ul>
+            </div>
+          }
+
+          <!-- Goal section (FA only) -->
+          @if (i18n.t('ABOUT.OVERVIEW.SEC_GOAL')) {
+            <h3 class="font-[family-name:var(--font-fa-display)] text-[1.1rem] font-bold text-[#7F0000] m-0 mt-8 mb-4 pb-2 border-b border-[var(--border)]">{{ i18n.t('ABOUT.OVERVIEW.SEC_GOAL') }}</h3>
+            @if (i18n.t('ABOUT.OVERVIEW.GOAL_1')) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.OVERVIEW.GOAL_1') }}</p>
+            }
+            @if (i18n.t('ABOUT.OVERVIEW.GOAL_2')) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.OVERVIEW.GOAL_2') }}</p>
+            }
+            @if (i18n.t('ABOUT.OVERVIEW.GOAL_3')) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5 pr-4 border-r-[3px] border-r-[#7F0000]">{{ i18n.t('ABOUT.OVERVIEW.GOAL_3') }}</p>
+            }
+            @if (i18n.t('ABOUT.OVERVIEW.GOAL_4')) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5 pr-4 border-r-[3px] border-r-[#7F0000]">{{ i18n.t('ABOUT.OVERVIEW.GOAL_4') }}</p>
+            }
+          }
+
+          <!-- Costs section (FA only) -->
+          @if (i18n.t('ABOUT.OVERVIEW.SEC_COSTS')) {
+            <h3 class="font-[family-name:var(--font-fa-display)] text-[1.1rem] font-bold text-[#7F0000] m-0 mt-8 mb-4 pb-2 border-b border-[var(--border)]">{{ i18n.t('ABOUT.OVERVIEW.SEC_COSTS') }}</h3>
+            @if (i18n.t('ABOUT.OVERVIEW.COSTS_1')) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.OVERVIEW.COSTS_1') }}</p>
+            }
+          }
+
+          <!-- Path section (FA only) -->
+          @if (i18n.t('ABOUT.OVERVIEW.SEC_PATH')) {
+            <h3 class="font-[family-name:var(--font-fa-display)] text-[1.1rem] font-bold text-[#7F0000] m-0 mt-8 mb-4 pb-2 border-b border-[var(--border)]">{{ i18n.t('ABOUT.OVERVIEW.SEC_PATH') }}</h3>
+            @if (i18n.t('ABOUT.OVERVIEW.PATH_1')) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.OVERVIEW.PATH_1') }}</p>
+            }
+          }
+
+          <!-- Online programme section (FA only) -->
+          @if (i18n.t('ABOUT.OVERVIEW.SEC_ONLINE')) {
+            <h3 class="font-[family-name:var(--font-fa-display)] text-[1.1rem] font-bold text-[#7F0000] m-0 mt-8 mb-4 pb-2 border-b border-[var(--border)]">{{ i18n.t('ABOUT.OVERVIEW.SEC_ONLINE') }}</h3>
+            @if (i18n.t('ABOUT.OVERVIEW.ONLINE_1')) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.OVERVIEW.ONLINE_1') }}</p>
+            }
+            @if (i18n.t('ABOUT.OVERVIEW.ONLINE_2')) {
+              <p class="font-[family-name:var(--font-fa)] text-[0.95rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5 p-4 bg-[var(--bg-card)] border border-[var(--border)] rounded-[6px]">{{ i18n.t('ABOUT.OVERVIEW.ONLINE_2') }}</p>
+            }
+          }
+
+        </article>
+      }
+
+      <!-- ── HISTORY ──────────────────────────────────────────── -->
+      @if (activeSection() === 'history') {
+        <article class="about-section-anim">
+          <h2 class="font-[family-name:var(--font-ui)] text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-[#7F0000] m-0 mb-3 tracking-[-0.01em] rtl:font-[family-name:var(--font-fa-display)] rtl:font-normal rtl:tracking-normal">{{ i18n.t('ABOUT.HISTORY.HEADING') }}</h2>
+          <div class="w-10 h-[2px] bg-[#7F0000] mb-7" aria-hidden="true"></div>
+
+          <!-- Section 1 -->
+          @if (i18n.t('ABOUT.HISTORY.SEC_ORIGIN')) {
+            <h3 class="font-[family-name:var(--font-ui)] text-[0.8125rem] font-semibold text-[#7F0000] mt-7 mb-3 tracking-[0.06em] uppercase rtl:font-[family-name:var(--font-fa-display)] rtl:text-[1.1rem] rtl:font-bold rtl:normal-case rtl:tracking-normal rtl:mt-8 rtl:mb-4 rtl:pb-2 rtl:border-b rtl:border-[var(--border)]">{{ i18n.t('ABOUT.HISTORY.SEC_ORIGIN') }}</h3>
+          }
+          @for (key of ['ORIGIN_P1','ORIGIN_P2','ORIGIN_P3','ORIGIN_P4','ORIGIN_P5']; track key) {
+            @if (i18n.t('ABOUT.HISTORY.' + key)) {
+              <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.HISTORY.' + key) }}</p>
+            }
+          }
+          @if (i18n.t('ABOUT.HISTORY.ORIGIN_P6')) {
+            <blockquote class="border-r-0 border-s-[3px] border-[#7F0000] ps-4 my-5 font-[family-name:var(--font-ui)] text-[0.9rem] font-normal text-[var(--text-secondary)] leading-[1.8] italic rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2] rtl:not-italic">{{ i18n.t('ABOUT.HISTORY.ORIGIN_P6') }}</blockquote>
+          }
+          @if (i18n.t('ABOUT.HISTORY.ORIGIN_P7')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.HISTORY.ORIGIN_P7') }}</p>
+          }
+          @if (i18n.t('ABOUT.HISTORY.ORIGIN_P8')) {
+            <blockquote class="border-r-0 border-s-[3px] border-[#7F0000] ps-4 my-5 font-[family-name:var(--font-ui)] text-[0.9rem] font-normal text-[var(--text-secondary)] leading-[1.8] italic rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2] rtl:not-italic">{{ i18n.t('ABOUT.HISTORY.ORIGIN_P8') }}</blockquote>
+          }
+          @if (i18n.isRtl() && i18n.t('ABOUT.HISTORY.ORIGIN_P9_A')) {
+            <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">
+              {{ i18n.t('ABOUT.HISTORY.ORIGIN_P9_A') }}&nbsp;<a
+                routerLink="/boulorian"
+                class="text-[#7F0000] underline decoration-dotted underline-offset-[3px] decoration-[#7F0000]/50 transition-colors duration-200 hover:text-[#A30000] hover:decoration-[#A30000]/80 focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px] rounded-[2px]"
+              >{{ i18n.t('ABOUT.HISTORY.ORIGIN_P9_LINK') }}</a>
+            </p>
+            @if (i18n.t('ABOUT.HISTORY.ORIGIN_P9_B')) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.HISTORY.ORIGIN_P9_B') }}</p>
+            }
+          } @else if (i18n.t('ABOUT.HISTORY.ORIGIN_P9')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.HISTORY.ORIGIN_P9') }}</p>
+          }
+
+          <!-- Section 2 -->
+          @if (i18n.t('ABOUT.HISTORY.SEC_IISH')) {
+            <h3 class="font-[family-name:var(--font-ui)] text-[0.8125rem] font-semibold text-[#7F0000] mt-7 mb-3 tracking-[0.06em] uppercase rtl:font-[family-name:var(--font-fa-display)] rtl:text-[1.1rem] rtl:font-bold rtl:normal-case rtl:tracking-normal rtl:mt-8 rtl:mb-4 rtl:pb-2 rtl:border-b rtl:border-[var(--border)]">{{ i18n.t('ABOUT.HISTORY.SEC_IISH') }}</h3>
+          }
+          @for (key of ['IISH_P1','IISH_P2','IISH_P3']; track key) {
+            @if (i18n.t('ABOUT.HISTORY.' + key)) {
+              <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.HISTORY.' + key) }}</p>
+            }
+          }
+
+          <!-- Section 3 -->
+          @if (i18n.t('ABOUT.HISTORY.SEC_RAIOH')) {
+            <h3 class="font-[family-name:var(--font-ui)] text-[0.8125rem] font-semibold text-[#7F0000] mt-7 mb-3 tracking-[0.06em] uppercase rtl:font-[family-name:var(--font-fa-display)] rtl:text-[1.1rem] rtl:font-bold rtl:normal-case rtl:tracking-normal rtl:mt-8 rtl:mb-4 rtl:pb-2 rtl:border-b rtl:border-[var(--border)]">{{ i18n.t('ABOUT.HISTORY.SEC_RAIOH') }}</h3>
+          }
+          @for (key of ['RAIOH_P1','RAIOH_P2']; track key) {
+            @if (i18n.t('ABOUT.HISTORY.' + key)) {
+              <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.HISTORY.' + key) }}</p>
+            }
+          }
+
+          <!-- RAIOH_P3 — inline link to the source documents PDF (اسناد) -->
+          @if (i18n.isRtl() && i18n.t('ABOUT.HISTORY.RAIOH_P3_A')) {
+            <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">
+              {{ i18n.t('ABOUT.HISTORY.RAIOH_P3_A') }}<button
+                type="button"
+                class="text-[#7F0000] underline decoration-dotted underline-offset-[3px] decoration-[#7F0000]/50 cursor-pointer bg-transparent border-0 p-0 font-[family-name:var(--font-fa)] text-[1rem] leading-[2] transition-colors duration-200 hover:text-[#A30000] hover:decoration-[#A30000]/80 focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px] rounded-[2px]"
+                (click)="openAsnadPdf()"
+                aria-label="مشاهده سند: اسناد تاریخ جنبش چپ ایران در قرن بیستم"
+              >{{ i18n.t('ABOUT.HISTORY.RAIOH_P3_LINK') }}</button>{{ i18n.t('ABOUT.HISTORY.RAIOH_P3_B') }}
+            </p>
+          } @else if (i18n.t('ABOUT.HISTORY.RAIOH_P3')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.HISTORY.RAIOH_P3') }}</p>
+          }
+
+          @for (key of ['RAIOH_P4','RAIOH_P5','RAIOH_P6']; track key) {
+            @if (i18n.t('ABOUT.HISTORY.' + key)) {
+              <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.HISTORY.' + key) }}</p>
+            }
+          }
+
+          <!-- RAIOH_P7 — inline link to the conference proceedings PDF -->
+          @if (i18n.isRtl() && i18n.t('ABOUT.HISTORY.RAIOH_P7_A')) {
+            <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">
+              {{ i18n.t('ABOUT.HISTORY.RAIOH_P7_A') }}<button
+                type="button"
+                class="text-[#7F0000] underline decoration-dotted underline-offset-[3px] decoration-[#7F0000]/50 cursor-pointer bg-transparent border-0 p-0 font-[family-name:var(--font-fa)] text-[1rem] leading-[2] transition-colors duration-200 hover:text-[#A30000] hover:decoration-[#A30000]/80 focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px] rounded-[2px]"
+                (click)="openConferencePdf()"
+                aria-label="مشاهده سند: New experience in oral history — نهمین کنفرانس بین‌المللی تاریخ‌دانان شفاهی"
+              >{{ i18n.t('ABOUT.HISTORY.RAIOH_P7_LINK') }}</button>{{ i18n.t('ABOUT.HISTORY.RAIOH_P7_B') }}
+            </p>
+          } @else if (i18n.t('ABOUT.HISTORY.RAIOH_P7')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.HISTORY.RAIOH_P7') }}</p>
+          }
+
+          <!-- Section 4 (Persian only) -->
+          @if (i18n.t('ABOUT.HISTORY.SEC_4')) {
+            <h3 class="font-[family-name:var(--font-ui)] text-[0.8125rem] font-semibold text-[#7F0000] mt-7 mb-3 tracking-[0.06em] uppercase rtl:font-[family-name:var(--font-fa-display)] rtl:text-[1.1rem] rtl:font-bold rtl:normal-case rtl:tracking-normal rtl:mt-8 rtl:mb-4 rtl:pb-2 rtl:border-b rtl:border-[var(--border)]">{{ i18n.t('ABOUT.HISTORY.SEC_4') }}</h3>
+          }
+          <!-- SEC4_P1 — inline link to the copyright agreement PDF -->
+          @if (i18n.isRtl() && i18n.t('ABOUT.HISTORY.SEC4_P1_A')) {
+            <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">
+              {{ i18n.t('ABOUT.HISTORY.SEC4_P1_A') }}<button
+                type="button"
+                class="text-[#7F0000] underline decoration-dotted underline-offset-[3px] decoration-[#7F0000]/50 cursor-pointer bg-transparent border-0 p-0 font-[family-name:var(--font-fa)] text-[1rem] leading-[2] transition-colors duration-200 hover:text-[#A30000] hover:decoration-[#A30000]/80 focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px] rounded-[2px]"
+                (click)="openAgreementPdf()"
+                aria-label="مشاهده سند: توافق‌نامه کپی‌رایت طرح تاریخ شفاهی ویدیویی چپ ایران"
+              >{{ i18n.t('ABOUT.HISTORY.SEC4_P1_LINK') }}</button>{{ i18n.t('ABOUT.HISTORY.SEC4_P1_B') }}
+            </p>
+          } @else if (i18n.t('ABOUT.HISTORY.SEC4_P1')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.HISTORY.SEC4_P1') }}</p>
+          }
+
+          <!-- Section 5 (Persian only) — dialogue excerpt -->
+          @if (i18n.t('ABOUT.HISTORY.SEC_5')) {
+            <h3 class="font-[family-name:var(--font-ui)] text-[0.8125rem] font-semibold text-[#7F0000] mt-7 mb-3 tracking-[0.06em] uppercase rtl:font-[family-name:var(--font-fa-display)] rtl:text-[1.1rem] rtl:font-bold rtl:normal-case rtl:tracking-normal rtl:mt-8 rtl:mb-4 rtl:pb-2 rtl:border-b rtl:border-[var(--border)]">{{ i18n.t('ABOUT.HISTORY.SEC_5') }}</h3>
+          }
+          @if (i18n.t('ABOUT.HISTORY.SEC5_P1')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.HISTORY.SEC5_P1') }}</p>
+          }
+          @for (key of ['SEC5_P2','SEC5_P3']; track key) {
+            @if (i18n.t('ABOUT.HISTORY.' + key)) {
+              <blockquote class="border-r-0 border-s-[3px] border-[#7F0000] ps-4 my-5 font-[family-name:var(--font-ui)] text-[0.9rem] font-normal text-[var(--text-secondary)] leading-[1.8] rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.HISTORY.' + key) }}</blockquote>
+            }
+          }
+
+          <!-- ── SEC 5 continuation: Alavi dialogue + naval career + documents (Persian only) ── -->
+          @if (i18n.t('ABOUT.HISTORY.SEC5_P4_ALAVI_Q')) {
+
+            <!-- Bakery photo -->
+            <figure class="mt-9 mb-8">
+              <img
+                src="assets/about/nanvaie.jpg"
+                alt="حمید احمدی در نانوایی — دوران کار یدی در برلین"
+                loading="lazy"
+                class="w-full max-w-[560px] mx-auto block border border-[var(--border)] rounded-[8px] shadow-sm bg-[var(--bg-card)]"
+              />
+            </figure>
+
+            <!-- Bakery dialogue exchange -->
+            <div class="mb-8 p-6 bg-[var(--bg-card)] border border-[var(--border)] rounded-[8px]">
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2.1] mb-3">{{ i18n.t('ABOUT.HISTORY.SEC5_P4_ALAVI_Q') }}</p>
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-semibold text-[var(--text-primary)] leading-[2.1] mb-3 pe-4 border-e-[3px] border-e-[#7F0000]">{{ i18n.t('ABOUT.HISTORY.SEC5_P4_AHMADI') }}</p>
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-muted)] leading-[2.1] m-0 italic">{{ i18n.t('ABOUT.HISTORY.SEC5_P4_ALAVI_A') }}</p>
+            </div>
+
+            <!-- Naval career triptych -->
+            <div class="grid grid-cols-3 gap-4 my-9 max-[560px]:grid-cols-1">
+              @for (img of [
+                { src: 'assets/about/uniform-sefid.png', alt: 'حمید احمدی در لباس فرم سفید نیروی دریایی ایران' },
+                { src: 'assets/about/uniform-meshki.jpg', alt: 'حمید احمدی در لباس فرم مشکی نیروی دریایی ایران' },
+                { src: 'assets/about/arche.jpg', alt: 'حمید احمدی — افسر نیروی دریایی ایران' }
+              ]; track img.src) {
+                <figure class="m-0 group overflow-hidden border border-[var(--border)] rounded-[8px] bg-[var(--bg-card)] shadow-sm">
+                  <img
+                    [src]="img.src"
+                    [alt]="img.alt"
+                    loading="lazy"
+                    class="w-full h-full object-cover aspect-[3/4] block transition-transform duration-300 group-hover:scale-[1.03]"
+                  />
+                </figure>
+              }
+            </div>
+
+            <!-- Naval career narrative -->
+            @for (key of ['SEC5_NAVAL_1','SEC5_NAVAL_2','SEC5_NAVAL_3']; track key) {
+              @if (i18n.t('ABOUT.HISTORY.' + key)) {
+                <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2.1] mb-6">{{ i18n.t('ABOUT.HISTORY.' + key) }}</p>
+              }
+            }
+
+            @if (i18n.t('ABOUT.HISTORY.SEC5_NAVAL_4')) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2.1] mb-4">{{ i18n.t('ABOUT.HISTORY.SEC5_NAVAL_4') }}</p>
+            }
+
+            <!-- Final recording dialogue -->
+            <div class="my-6 ps-4 border-s-[3px] border-[#7F0000] flex flex-col gap-2">
+              @for (key of ['SEC5_FINAL_D1','SEC5_FINAL_D2','SEC5_FINAL_D3','SEC5_FINAL_D4']; track key) {
+                @if (i18n.t('ABOUT.HISTORY.' + key)) {
+                  <p class="font-[family-name:var(--font-fa)] text-[0.95rem] font-normal text-[var(--text-secondary)] leading-[2] m-0">{{ i18n.t('ABOUT.HISTORY.' + key) }}</p>
+                }
+              }
+            </div>
+
+            @if (i18n.t('ABOUT.HISTORY.SEC5_CLOSING')) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2.1] mb-8">{{ i18n.t('ABOUT.HISTORY.SEC5_CLOSING') }}</p>
+            }
+
+            <!-- Document photos → clickable (open in new window) -->
+            <div class="grid grid-cols-2 gap-5 mt-8 max-[560px]:grid-cols-1">
+
+              <!-- Agreement → tawafognameh.pdf -->
+              <figure class="m-0">
+                <button
+                  type="button"
+                  (click)="openTawafoghPdf()"
+                  class="group block w-full text-inherit bg-transparent border-0 p-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[3px] rounded-[8px]"
+                  aria-label="گشودن توافقنامۀ امضاء شده بین بزرگ علوی و حمید احمدی در پنجره جدید"
+                >
+                  <span class="block overflow-hidden border border-[var(--border)] rounded-[8px] bg-[var(--bg-card)] shadow-sm transition-[border-color,box-shadow] duration-200 group-hover:border-[var(--accent-border)] group-hover:shadow-md">
+                    <img
+                      src="assets/about/ba-alavi1.jpg"
+                      alt="توافقنامۀ امضاء شده بین بزرگ علوی و حمید احمدی"
+                      loading="lazy"
+                      class="w-full block transition-transform duration-300 group-hover:scale-[1.03]"
+                    />
+                  </span>
+                  <figcaption class="flex items-center justify-center gap-[0.4rem] font-[family-name:var(--font-fa)] text-[0.85rem] font-[500] text-[#7F0000] text-center mt-3 leading-[1.9] transition-colors duration-200 group-hover:text-[#A30000]">
+                    <svg class="flex-shrink-0 w-[0.85em] h-[0.85em]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    <span>{{ i18n.t('ABOUT.HISTORY.SEC5_DOC1_LINK') }}</span>
+                  </figcaption>
+                </button>
+              </figure>
+
+              <!-- Book cover → alavi1.gif -->
+              <figure class="m-0">
+                <button
+                  type="button"
+                  (click)="openAlaviCoverGif()"
+                  class="group block w-full text-inherit bg-transparent border-0 p-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[3px] rounded-[8px]"
+                  aria-label="گشودن عکس جلد کتاب خاطرات بزرگ علوی در پنجره جدید"
+                >
+                  <span class="block overflow-hidden border border-[var(--border)] rounded-[8px] bg-[var(--bg-card)] shadow-sm transition-[border-color,box-shadow] duration-200 group-hover:border-[var(--accent-border)] group-hover:shadow-md">
+                    <img
+                      src="assets/about/ba-alavi2.jpg"
+                      alt="عکس جلد کتاب خاطرات بزرگ علوی"
+                      loading="lazy"
+                      class="w-full block transition-transform duration-300 group-hover:scale-[1.03]"
+                    />
+                  </span>
+                  <figcaption class="flex items-center justify-center gap-[0.4rem] font-[family-name:var(--font-fa)] text-[0.85rem] font-[500] text-[#7F0000] text-center mt-3 leading-[1.9] transition-colors duration-200 group-hover:text-[#A30000]">
+                    <svg class="flex-shrink-0 w-[0.85em] h-[0.85em]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    <span>{{ i18n.t('ABOUT.HISTORY.SEC5_DOC2_LINK') }}</span>
+                  </figcaption>
+                </button>
+              </figure>
+
+            </div>
+          }
+        </article>
+      }
+
+      <!-- ── GENESIS (Persian only) ───────────────────────────── -->
+      @if (activeSection() === 'genesis') {
+        <article class="about-section-anim">
+          <h2 class="font-[family-name:var(--font-ui)] text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-[#7F0000] m-0 mb-3 tracking-[-0.01em] rtl:font-[family-name:var(--font-fa-display)] rtl:font-normal rtl:tracking-normal">{{ i18n.t('ABOUT.GENESIS.HEADING') }}</h2>
+          <div class="w-10 h-[2px] bg-[#7F0000] mb-7" aria-hidden="true"></div>
+
+          <!-- Section 1: Securing the prerequisites -->
+          @if (i18n.t('ABOUT.GENESIS.SEC_PREREQ')) {
+            <h3 class="font-[family-name:var(--font-fa-display)] text-[1.1rem] font-bold text-[#7F0000] m-0 mb-4 mt-2 pb-2 border-b border-[var(--border)]">{{ i18n.t('ABOUT.GENESIS.SEC_PREREQ') }}</h3>
+          }
+          @for (key of ['PREREQ_P1','PREREQ_P2','PREREQ_P3','PREREQ_P4']; track key) {
+            @if (i18n.t('ABOUT.GENESIS.' + key)) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.GENESIS.' + key) }}</p>
+            }
+          }
+          @if (i18n.t('ABOUT.GENESIS.PREREQ_REG')) {
+            <p dir="ltr" class="font-[family-name:var(--font-ui)] text-[0.85rem] font-normal text-[var(--text-muted)] leading-[1.7] my-6 p-4 bg-[var(--bg-card)] border border-[var(--border)] rounded-[6px] text-left break-words">{{ i18n.t('ABOUT.GENESIS.PREREQ_REG') }}</p>
+          }
+          @if (i18n.t('ABOUT.GENESIS.PREREQ_P5')) {
+            <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.GENESIS.PREREQ_P5') }}</p>
+          }
+
+          <!-- Section 2: Failure to secure funding -->
+          @if (i18n.t('ABOUT.GENESIS.SEC_FUNDING_FAIL')) {
+            <h3 class="font-[family-name:var(--font-fa-display)] text-[1.1rem] font-bold text-[#7F0000] m-0 mt-8 mb-4 pb-2 border-b border-[var(--border)]">{{ i18n.t('ABOUT.GENESIS.SEC_FUNDING_FAIL') }}</h3>
+          }
+          @for (key of ['FUNDING_FAIL_P1','FUNDING_FAIL_P2']; track key) {
+            @if (i18n.t('ABOUT.GENESIS.' + key)) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.GENESIS.' + key) }}</p>
+            }
+          }
+
+          <!-- Section 3: How our video oral-history programme was realised -->
+          @if (i18n.t('ABOUT.GENESIS.SEC_PROGRAM')) {
+            <h3 class="font-[family-name:var(--font-fa-display)] text-[1.1rem] font-bold text-[#7F0000] m-0 mt-8 mb-4 pb-2 border-b border-[var(--border)]">{{ i18n.t('ABOUT.GENESIS.SEC_PROGRAM') }}</h3>
+          }
+          @for (key of ['PROGRAM_P1','PROGRAM_P2','PROGRAM_P3','PROGRAM_P4']; track key) {
+            @if (i18n.t('ABOUT.GENESIS.' + key)) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.GENESIS.' + key) }}</p>
+            }
+          }
+
+          <!-- Section 4: Financial support received -->
+          @if (i18n.t('ABOUT.GENESIS.SEC_SUPPORT')) {
+            <h3 class="font-[family-name:var(--font-fa-display)] text-[1.1rem] font-bold text-[#7F0000] m-0 mt-8 mb-4 pb-2 border-b border-[var(--border)]">{{ i18n.t('ABOUT.GENESIS.SEC_SUPPORT') }}</h3>
+          }
+          @for (key of ['SUPPORT_P1','SUPPORT_P2']; track key) {
+            @if (i18n.t('ABOUT.GENESIS.' + key)) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.GENESIS.' + key) }}</p>
+            }
+          }
+
+          <!-- Section 5: Academic reception of the collection -->
+          @if (i18n.t('ABOUT.GENESIS.SEC_ACADEMIC')) {
+            <h3 class="font-[family-name:var(--font-fa-display)] text-[1.1rem] font-bold text-[#7F0000] m-0 mt-8 mb-4 pb-2 border-b border-[var(--border)]">{{ i18n.t('ABOUT.GENESIS.SEC_ACADEMIC') }}</h3>
+          }
+          @for (key of ['ACADEMIC_P1','ACADEMIC_P2']; track key) {
+            @if (i18n.t('ABOUT.GENESIS.' + key)) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.GENESIS.' + key) }}</p>
+            }
+          }
+          @if (i18n.t('ABOUT.GENESIS.ACADEMIC_UNIS')) {
+            <p class="font-[family-name:var(--font-fa)] text-[1rem] font-[500] text-[var(--text-primary)] leading-[2.1] my-6 p-5 bg-[var(--accent-glow)] border border-[var(--accent-border)] rounded-[6px]">{{ i18n.t('ABOUT.GENESIS.ACADEMIC_UNIS') }}</p>
+          }
+          @if (i18n.t('ABOUT.GENESIS.ACADEMIC_P3')) {
+            <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.GENESIS.ACADEMIC_P3') }}</p>
+          }
+          @if (i18n.t('ABOUT.GENESIS.ACADEMIC_QUOTE')) {
+            <blockquote class="border-r-0 border-s-[3px] border-[#7F0000] ps-4 my-6 font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2]">{{ i18n.t('ABOUT.GENESIS.ACADEMIC_QUOTE') }}</blockquote>
+          }
+        </article>
+      }
+
+      <!-- ── METHOD ───────────────────────────────────────────── -->
+      @if (activeSection() === 'method') {
+        <article class="about-section-anim">
+          <h2 class="font-[family-name:var(--font-ui)] text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-[#7F0000] m-0 mb-3 tracking-[-0.01em] rtl:font-[family-name:var(--font-fa-display)] rtl:font-normal rtl:tracking-normal">{{ i18n.t('ABOUT.METHOD.HEADING') }}</h2>
+          <div class="w-10 h-[2px] bg-[#7F0000] mb-7" aria-hidden="true"></div>
+
+          @for (key of ['P1','P2','P3','P4','P5']; track key) {
+            @if (i18n.t('ABOUT.METHOD.' + key)) {
+              <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.METHOD.' + key) }}</p>
+            }
+          }
+
+          <!-- Persian only: link to the narrator composition (overview stats) -->
+          @if (i18n.isRtl() && i18n.t('ABOUT.METHOD.LINK_A')) {
+            <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">
+              {{ i18n.t('ABOUT.METHOD.LINK_A') }}<button
+                type="button"
+                class="text-[#7F0000] underline decoration-dotted underline-offset-[3px] decoration-[#7F0000]/50 cursor-pointer bg-transparent border-0 p-0 font-[family-name:var(--font-fa)] text-[1rem] leading-[2] transition-colors duration-200 hover:text-[#A30000] hover:decoration-[#A30000]/80 focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px] rounded-[2px]"
+                (click)="setSection('overview')"
+              >{{ i18n.t('ABOUT.METHOD.LINK_LINK') }}</button>{{ i18n.t('ABOUT.METHOD.LINK_B') }}
+            </p>
+          }
+
+          <!-- References (EN / DE) -->
+          @if (i18n.t('ABOUT.METHOD.REF_1')) {
+            <div class="mt-9 pt-5 border-t border-[var(--border)] flex flex-col gap-3">
+              @for (key of ['REF_1','REF_2']; track key) {
+                @if (i18n.t('ABOUT.METHOD.' + key)) {
+                  <p class="font-[family-name:var(--font-ui)] text-[0.8125rem] font-normal text-[var(--text-muted)] leading-[1.7] ps-5 [text-indent:-1.25rem]">{{ i18n.t('ABOUT.METHOD.' + key) }}</p>
+                }
+              }
+            </div>
+          }
+        </article>
+      }
+
+      <!-- ── VIDEOS ───────────────────────────────────────────── -->
+      @if (activeSection() === 'videos') {
+        <article class="about-section-anim">
+          <h2 class="font-[family-name:var(--font-ui)] text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-[#7F0000] m-0 mb-3 tracking-[-0.01em] rtl:font-[family-name:var(--font-fa-display)] rtl:font-normal rtl:tracking-normal">{{ i18n.t('ABOUT.VIDEOS.HEADING') }}</h2>
+          <div class="w-10 h-[2px] bg-[#7F0000] mb-7" aria-hidden="true"></div>
+          @if (i18n.t('ABOUT.VIDEOS.P1')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.VIDEOS.P1') }}</p>
+          }
+          @if (i18n.t('ABOUT.VIDEOS.P2')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.VIDEOS.P2') }}</p>
+          }
+          @if (i18n.t('ABOUT.VIDEOS.NOTABLE_INTRO')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-semibold text-[var(--text-primary)] mb-2 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem]">{{ i18n.t('ABOUT.VIDEOS.NOTABLE_INTRO') }}</p>
+            <ul class="list-none p-0 mb-6">
+              @for (key of ['NOTABLE_1','NOTABLE_2','NOTABLE_3','NOTABLE_4']; track key) {
+                @if (i18n.t('ABOUT.VIDEOS.' + key)) {
+                  <li class="flex items-baseline gap-[0.625rem] py-[0.4rem] font-[family-name:var(--font-ui)] text-[0.9rem] font-normal text-[var(--text-secondary)] leading-[1.6] border-b border-[var(--border)] before:content-[''] before:flex-shrink-0 before:w-1 before:h-1 before:bg-[#7F0000] before:rounded-full rtl:font-[family-name:var(--font-fa)] rtl:text-[0.95rem] rtl:leading-[1.85]">{{ i18n.t('ABOUT.VIDEOS.' + key) }}</li>
+                }
+              }
+            </ul>
+          }
+          @if (i18n.t('ABOUT.VIDEOS.P3')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.VIDEOS.P3') }}</p>
+          }
+        </article>
+      }
+
+      <!-- ── SUBJECTS ──────────────────────────────────────────── -->
+      @if (activeSection() === 'subjects') {
+        <article class="about-section-anim">
+          <h2 class="font-[family-name:var(--font-ui)] text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-[#7F0000] m-0 mb-3 tracking-[-0.01em] rtl:font-[family-name:var(--font-fa-display)] rtl:font-normal rtl:tracking-normal">{{ i18n.t('ABOUT.SUBJECTS.HEADING') }}</h2>
+          <div class="w-10 h-[2px] bg-[#7F0000] mb-7" aria-hidden="true"></div>
+
+          <!-- Lead paragraph (all languages) -->
+          @if (i18n.t('ABOUT.SUBJECTS.INTRO')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.SUBJECTS.INTRO') }}</p>
+          }
+
+          <!-- Second paragraph (EN / DE) -->
+          @if (i18n.t('ABOUT.SUBJECTS.P2')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5">{{ i18n.t('ABOUT.SUBJECTS.P2') }}</p>
+          }
+
+          <!-- Five documentary periods (Persian only) -->
+          @if (i18n.t('ABOUT.SUBJECTS.PERIOD_1')) {
+            <ul class="list-none p-0 my-7 flex flex-col gap-3">
+              @for (key of ['PERIOD_1','PERIOD_2','PERIOD_3','PERIOD_4','PERIOD_5']; track key) {
+                @if (i18n.t('ABOUT.SUBJECTS.' + key)) {
+                  <li class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] ps-4 border-s-[3px] border-[#7F0000]">{{ i18n.t('ABOUT.SUBJECTS.' + key) }}</li>
+                }
+              }
+            </ul>
+          }
+
+          <!-- Written documents & production forecast (Persian only) -->
+          @for (key of ['DOCS_1','DOCS_2','PREDICT']; track key) {
+            @if (i18n.t('ABOUT.SUBJECTS.' + key)) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.SUBJECTS.' + key) }}</p>
+            }
+          }
+
+          <!-- Historical-memory statement + bilingual project title (Persian only) -->
+          @if (i18n.t('ABOUT.SUBJECTS.MEMORY')) {
+            <p class="font-[family-name:var(--font-fa)] text-[1rem] font-[500] text-[var(--text-primary)] leading-[2.1] mt-8 mb-3 p-5 bg-[var(--accent-glow)] border border-[var(--accent-border)] rounded-[6px]">{{ i18n.t('ABOUT.SUBJECTS.MEMORY') }}</p>
+          }
+          @if (i18n.t('ABOUT.SUBJECTS.MEMORY_EN')) {
+            <p dir="ltr" class="font-[family-name:var(--font-ui)] text-[0.85rem] font-[500] text-[#7F0000] tracking-[0.01em] leading-[1.7] mb-6 text-left">{{ i18n.t('ABOUT.SUBJECTS.MEMORY_EN') }}</p>
+          }
+
+          <!-- Closing note (Persian only) -->
+          @if (i18n.t('ABOUT.SUBJECTS.CLOSING')) {
+            <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.SUBJECTS.CLOSING') }}</p>
+          }
+        </article>
+      }
+
+      <!-- ── DOCUMENTS (Journal Collection) ────────────────────── -->
+      @if (activeSection() === 'documents') {
+        <article class="about-section-anim">
+          <h2 class="font-[family-name:var(--font-ui)] text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-[#7F0000] m-0 mb-3 tracking-[-0.01em] rtl:font-[family-name:var(--font-fa-display)] rtl:font-normal rtl:tracking-normal">{{ i18n.t('ABOUT.DOCUMENTS.HEADING') }}</h2>
+          <div class="w-10 h-[2px] bg-[#7F0000] mb-7" aria-hidden="true"></div>
+
+          <!-- Lead paragraph (all languages) -->
+          @if (i18n.t('ABOUT.DOCUMENTS.INTRO')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-5 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.DOCUMENTS.INTRO') }}</p>
+          }
+
+          <!-- Additional descriptive paragraphs (Persian only) -->
+          @for (key of ['P2','P3','P4','P5']; track key) {
+            @if (i18n.t('ABOUT.DOCUMENTS.' + key)) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.DOCUMENTS.' + key) }}</p>
+            }
+          }
+
+          <!-- Inventory lead-in (Persian only) -->
+          @if (i18n.t('ABOUT.DOCUMENTS.LIST_INTRO')) {
+            <p class="font-[family-name:var(--font-fa)] text-[1rem] font-semibold text-[var(--text-primary)] mt-8 mb-4">{{ i18n.t('ABOUT.DOCUMENTS.LIST_INTRO') }}</p>
+          }
+
+          <!-- Inventory list -->
+          @if (i18n.isRtl()) {
+            <!-- Persian: interactive entries — one expands an index, the rest open PDFs -->
+            <ul class="list-none p-0 my-6 flex flex-col gap-2.5">
+
+              <!-- 1 · Expandable parties / organizations index -->
+              <li>
+                <button
+                  type="button"
+                  (click)="togglePartiesIndex()"
+                  [attr.aria-expanded]="partiesIndexOpen()"
+                  aria-controls="about-parties-index"
+                  class="group flex items-start gap-3 w-full text-start ps-4 pe-3 py-3 bg-transparent border-0 border-s-[3px] border-[#7F0000] rounded-e-[8px] cursor-pointer font-[family-name:var(--font-fa)] text-[1rem] leading-[2] text-[var(--text-secondary)] transition-[background-color,color] duration-200 hover:bg-[var(--accent-glow)] hover:text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px]"
+                  [class.bg-\[var\(--accent-glow\)\]]="partiesIndexOpen()"
+                  [class.text-\[var\(--text-primary\)\]]="partiesIndexOpen()"
+                >
+                  <svg class="flex-shrink-0 w-[1.1em] h-[1.1em] mt-[0.45em] text-[#7F0000] transition-transform duration-300" [class.rotate-180]="partiesIndexOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                  <span>{{ i18n.t('ABOUT.DOCUMENTS.LIST_1') }}</span>
+                </button>
+
+                @if (partiesIndexOpen()) {
+                  <div
+                    id="about-parties-index"
+                    role="region"
+                    [attr.aria-label]="i18n.t('ABOUT.DOCUMENTS.LIST_1')"
+                    class="about-section-anim mt-3 mb-1 p-6 max-[767px]:p-4 bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] shadow-sm"
+                  >
+                    <p class="font-[family-name:var(--font-fa)] text-[0.95rem] font-[500] text-[var(--text-primary)] leading-[2] mb-6 pb-4 border-b border-[var(--border)]">{{ archiveIndexIntro }}</p>
+
+                    @for (section of archiveIndexSections; track section.title) {
+                      <div class="mb-8 last:mb-0">
+                        <h3 class="font-[family-name:var(--font-fa-display)] text-[1.05rem] font-bold text-[#7F0000] leading-[1.9] mb-4 flex items-center gap-2">
+                          <span class="inline-block w-[6px] h-[6px] rounded-full bg-[#7F0000] flex-shrink-0" aria-hidden="true"></span>
+                          {{ section.title }}
+                        </h3>
+                        <ol class="list-none p-0 grid grid-cols-2 gap-x-8 gap-y-1 max-[600px]:grid-cols-1">
+                          @for (item of section.items; track $index) {
+                            <li class="flex items-baseline gap-2.5 py-[0.35rem]">
+                              <span class="flex-shrink-0 min-w-[1.6rem] text-start font-[family-name:var(--font-fa)] text-[0.8rem] font-bold text-[#7F0000] tabular-nums">{{ toFa($index + 1) }}</span>
+                              <span class="font-[family-name:var(--font-fa)] text-[0.95rem] text-[var(--text-secondary)] leading-[1.85]">{{ item }}</span>
+                            </li>
+                          }
+                        </ol>
+                        @if (section.note) {
+                          <p class="font-[family-name:var(--font-fa)] text-[0.9rem] text-[var(--text-muted)] leading-[1.95] mt-4 ps-3 border-s-2 border-[var(--border)]">{{ section.note }}</p>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </li>
+
+              <!-- 2–5 · PDF downloads -->
+              @for (link of archivePdfLinks; track link.file) {
+                <li>
+                  <button
+                    type="button"
+                    (click)="openAboutPdf(link.file)"
+                    class="group flex items-start gap-3 w-full text-start ps-4 pe-3 py-3 bg-transparent border-0 border-s-[3px] border-[#7F0000] rounded-e-[8px] cursor-pointer font-[family-name:var(--font-fa)] text-[1rem] leading-[2] text-[var(--text-secondary)] transition-[background-color,color] duration-200 hover:bg-[var(--accent-glow)] hover:text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px]"
+                  >
+                    <svg class="flex-shrink-0 w-[1.05em] h-[1.05em] mt-[0.5em] text-[#7F0000] transition-transform duration-200 group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    <span>{{ i18n.t(link.labelKey) }}</span>
+                  </button>
+                </li>
+              }
+            </ul>
+          } @else {
+            <!-- EN / DE: inventory with document links -->
+            <ul class="list-none p-0 my-6 flex flex-col gap-3">
+
+              <!-- 1 · Socialist / communist parties inventory → opens a PDF -->
+              @if (i18n.t('ABOUT.DOCUMENTS.LIST_2')) {
+                <li>
+                  <button
+                    type="button"
+                    (click)="openAboutPdf('iranian-socialist-communist-parties.pdf')"
+                    class="group flex items-start gap-3 w-full text-start ps-4 pe-3 py-3 bg-transparent border-0 border-s-[3px] border-[#7F0000] rounded-e-[8px] cursor-pointer font-[family-name:var(--font-ui)] text-[0.9rem] leading-[1.7] text-[var(--text-secondary)] transition-[background-color,color] duration-200 hover:bg-[var(--accent-glow)] hover:text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px]"
+                  >
+                    <svg class="flex-shrink-0 w-[1.05em] h-[1.05em] mt-[0.2em] text-[#7F0000] transition-transform duration-200 group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    <span>{{ i18n.t('ABOUT.DOCUMENTS.LIST_2') }}</span>
+                  </button>
+                </li>
+              }
+
+              <!-- 2 · Journals of the opposition → plain text with Part I / Part II documents -->
+              @if (i18n.t('ABOUT.DOCUMENTS.LIST_3')) {
+                <li class="ps-4 border-s-[3px] border-[#7F0000]">
+                  <p class="font-[family-name:var(--font-ui)] text-[0.9rem] font-normal text-[var(--text-secondary)] leading-[1.7] m-0">{{ i18n.t('ABOUT.DOCUMENTS.LIST_3') }}</p>
+                  <div class="flex flex-wrap items-center gap-x-7 gap-y-2 mt-3">
+                    @for (part of [
+                      { labelKey: 'ABOUT.DOCUMENTS.PART_1', file: 'asnad-tarikhi-be-farsi.pdf' },
+                      { labelKey: 'ABOUT.DOCUMENTS.PART_2', file: 'asnad-tarikhi-be-farsi2.pdf' }
+                    ]; track part.file) {
+                      <button
+                        type="button"
+                        (click)="openAboutPdf(part.file)"
+                        class="group inline-flex items-center gap-2 bg-transparent border-0 p-0 cursor-pointer font-[family-name:var(--font-ui)] text-[0.875rem] font-[500] text-[#7F0000] underline decoration-dotted underline-offset-[3px] decoration-[#7F0000]/50 transition-colors duration-200 hover:text-[#A30000] hover:decoration-[#A30000]/80 focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px] rounded-[2px]"
+                      >
+                        <svg class="flex-shrink-0 w-[0.9em] h-[0.9em] no-underline transition-transform duration-200 group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        <span>{{ i18n.t(part.labelKey) }}</span>
+                      </button>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </article>
+      }
+
+      <!-- ── TEAM ──────────────────────────────────────────────── -->
+      @if (activeSection() === 'team') {
+        <article class="about-section-anim">
+          <h2 class="font-[family-name:var(--font-ui)] text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-[#7F0000] m-0 mb-3 tracking-[-0.01em] rtl:font-[family-name:var(--font-fa-display)] rtl:font-normal rtl:tracking-normal">{{ i18n.t('ABOUT.TEAM.HEADING') }}</h2>
+          <div class="w-10 h-[2px] bg-[#7F0000] mb-7" aria-hidden="true"></div>
+
+          <div class="grid grid-cols-2 gap-4 mt-2 max-[600px]:grid-cols-1">
+            @for (member of teamMembers; track member.roleKey) {
+              @if (i18n.t(member.nameKey)) {
+                <div class="flex flex-col gap-[0.35rem] p-5 bg-[var(--bg-card)] border border-[var(--border)] border-s-[3px] border-s-[#7F0000] rounded-[6px] transition-[border-color] duration-200 hover:border-[var(--accent-border)] hover:border-s-[#7F0000]">
+                  <div class="font-[family-name:var(--font-ui)] text-[0.72rem] font-semibold tracking-[0.04em] uppercase text-[#7F0000] rtl:font-[family-name:var(--font-fa)] rtl:text-[0.9rem] rtl:tracking-normal rtl:normal-case">{{ i18n.t(member.roleKey) }}</div>
+                  <div class="font-[family-name:var(--font-ui)] text-[0.95rem] font-[500] text-[var(--text-primary)] leading-[1.7] rtl:font-[family-name:var(--font-fa)] rtl:text-[1.02rem] rtl:leading-[1.95]">{{ i18n.t(member.nameKey) }}</div>
+                </div>
+              }
+            }
+          </div>
+        </article>
+      }
+
+      <!-- ── FINANCE (Persian only) ────────────────────────────── -->
+      @if (activeSection() === 'finance') {
+        <article class="about-section-anim">
+          <h2 class="font-[family-name:var(--font-ui)] text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-[#7F0000] m-0 mb-3 tracking-[-0.01em] rtl:font-[family-name:var(--font-fa-display)] rtl:font-normal rtl:tracking-normal">{{ i18n.t('ABOUT.FINANCE.HEADING') }}</h2>
+          <div class="w-10 h-[2px] bg-[#7F0000] mb-7" aria-hidden="true"></div>
+
+          <!-- Intro paragraphs -->
+          @for (key of ['P1','P2','P3','P4']; track key) {
+            @if (i18n.t('ABOUT.FINANCE.' + key)) {
+              <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">{{ i18n.t('ABOUT.FINANCE.' + key) }}</p>
+            }
+          }
+
+          <!-- Statute link — opens the association's statute (اساسنامه) PDF in a new tab -->
+          @if (i18n.t('ABOUT.FINANCE.STATUTE_A')) {
+            <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mb-5">
+              {{ i18n.t('ABOUT.FINANCE.STATUTE_A') }}<button
+                type="button"
+                class="text-[#7F0000] underline decoration-dotted underline-offset-[3px] decoration-[#7F0000]/50 cursor-pointer bg-transparent border-0 p-0 font-[family-name:var(--font-fa)] text-[1rem] leading-[2] transition-colors duration-200 hover:text-[#A30000] hover:decoration-[#A30000]/80 focus-visible:outline-2 focus-visible:outline-[#7F0000] focus-visible:outline-offset-[2px] rounded-[2px]"
+                (click)="openAboutPdf('assasnameh.pdf')"
+                aria-label="گشودن اساسنامهٔ انجمن مطالعات تاریخ شفاهی ایران در پنجرهٔ جدید"
+              >{{ i18n.t('ABOUT.FINANCE.STATUTE_LINK') }}</button>{{ i18n.t('ABOUT.FINANCE.STATUTE_B') }}
+            </p>
+          }
+
+          <!-- Contact lead-in -->
+          @if (i18n.t('ABOUT.FINANCE.CONTACT_INTRO')) {
+            <p class="font-[family-name:var(--font-fa)] text-[1rem] font-normal text-[var(--text-secondary)] leading-[2] mt-8 mb-5">{{ i18n.t('ABOUT.FINANCE.CONTACT_INTRO') }}</p>
+          }
+
+          <!-- Contact letterhead (Latin script → forced LTR) -->
+          @if (i18n.t('ABOUT.FINANCE.ORG_EN')) {
+            <div dir="ltr" class="p-7 max-[600px]:p-4 bg-[var(--bg-card)] border border-[var(--border)] rounded-[6px] text-left">
+              <address class="not-italic flex flex-col gap-2">
+                <span class="font-[family-name:var(--font-ui)] text-[0.9rem] font-semibold text-[#7F0000] leading-[1.6]">{{ i18n.t('ABOUT.FINANCE.ORG_EN') }}</span>
+                <span class="font-[family-name:var(--font-ui)] text-[0.875rem] font-normal text-[var(--text-secondary)] leading-[1.7]">Tel/Fax: {{ i18n.t('ABOUT.FINANCE.TEL') }}</span>
+                <span class="font-[family-name:var(--font-ui)] text-[0.875rem] font-normal text-[var(--text-secondary)] leading-[1.7]">E-mail:
+                  <a class="text-[#7F0000] no-underline transition-colors duration-200 hover:text-[#A30000] break-all" href="mailto:Ahmadi.oralhistory@gmx.de">{{ i18n.t('ABOUT.FINANCE.EMAIL') }}</a>
+                </span>
+                <a class="font-[family-name:var(--font-ui)] text-[0.875rem] font-normal text-[#7F0000] no-underline transition-colors duration-200 hover:text-[#A30000] leading-[1.7] break-all" href="https://www.iranianoralhistory.de" target="_blank" rel="noopener noreferrer">{{ i18n.t('ABOUT.FINANCE.WEBSITE') }}</a>
+              </address>
+            </div>
+          }
+        </article>
+      }
+
+      <!-- ── TESTIMONIALS ──────────────────────────────────────── -->
+      @if (activeSection() === 'testimonials') {
+        <article class="about-section-anim">
+          <h2 class="font-[family-name:var(--font-ui)] text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-[#7F0000] m-0 mb-3 tracking-[-0.01em] rtl:font-[family-name:var(--font-fa-display)] rtl:font-normal rtl:tracking-normal">{{ i18n.t('ABOUT.TESTIMONIALS.HEADING') }}</h2>
+          <div class="w-10 h-[2px] bg-[#7F0000] mb-7" aria-hidden="true"></div>
+          @if (i18n.t('ABOUT.TESTIMONIALS.INTRO')) {
+            <p class="font-[family-name:var(--font-ui)] text-[1rem] font-[500] text-[var(--text-primary)] mb-5 rtl:font-[family-name:var(--font-fa)]">{{ i18n.t('ABOUT.TESTIMONIALS.INTRO') }}</p>
+          }
+
+          <div class="flex flex-col gap-5 mt-4">
+            @for (q of testimonials; track q.textKey) {
+              @if (i18n.t(q.textKey)) {
+                <blockquote class="m-0 p-6 bg-[var(--bg-card)] border border-[var(--border)] border-l-[3px] border-l-[#7F0000] rounded-[0_6px_6px_0] rtl:border-l-[1px] rtl:border-l-[var(--border)] rtl:border-r-[3px] rtl:border-r-[#7F0000] rtl:rounded-[6px_0_0_6px]">
+                  <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] italic font-normal text-[var(--text-primary)] leading-[1.8] m-0 mb-4 rtl:font-[family-name:var(--font-fa)] rtl:not-italic rtl:text-[1rem] rtl:leading-[2.15]">&ldquo;{{ i18n.t(q.textKey) }}&rdquo;</p>
+                  @if (i18n.t(q.authorKey) || i18n.t(q.roleKey) || i18n.t(q.orgKey) || i18n.t(q.dateKey) || i18n.t(q.sourceKey)) {
+                    <footer class="flex flex-col gap-[0.15rem] pt-3 border-t border-[var(--border)]">
+                      @if (i18n.t(q.authorKey)) {
+                        <strong class="font-[family-name:var(--font-ui)] text-[0.85rem] font-semibold tracking-[0.01em] text-[#7F0000] rtl:font-[family-name:var(--font-fa)] rtl:text-[0.95rem]">{{ i18n.t(q.authorKey) }}</strong>
+                      }
+                      @if (i18n.t(q.roleKey)) {
+                        <span class="font-[family-name:var(--font-ui)] text-[0.8rem] font-normal text-[var(--text-secondary)] leading-[1.5] rtl:font-[family-name:var(--font-fa)] rtl:text-[0.9rem] rtl:leading-[1.8]">{{ i18n.t(q.roleKey) }}</span>
+                      }
+                      @if (i18n.t(q.orgKey)) {
+                        <span class="font-[family-name:var(--font-ui)] text-[0.8rem] font-normal text-[var(--text-secondary)] leading-[1.5] rtl:font-[family-name:var(--font-fa)] rtl:text-[0.9rem] rtl:leading-[1.8]">{{ i18n.t(q.orgKey) }}</span>
+                      }
+                      @if (i18n.t(q.dateKey)) {
+                        <span class="font-[family-name:var(--font-ui)] text-[0.75rem] font-normal text-[var(--text-muted)] mt-[0.15rem] rtl:font-[family-name:var(--font-fa)] rtl:text-[0.85rem]">{{ i18n.t(q.dateKey) }}</span>
+                      }
+                      @if (i18n.t(q.sourceKey)) {
+                        <span class="font-[family-name:var(--font-ui)] text-[0.75rem] font-normal italic text-[var(--text-muted)] leading-[1.5] mt-[0.15rem] rtl:font-[family-name:var(--font-fa)] rtl:not-italic rtl:text-[0.85rem] rtl:leading-[1.8]">{{ i18n.t(q.sourceKey) }}</span>
+                      }
+                    </footer>
+                  }
+                </blockquote>
+              }
+            }
+          </div>
+        </article>
+      }
+
+      <!-- ── CONTACT ───────────────────────────────────────────── -->
+      @if (activeSection() === 'contact') {
+        <article class="about-section-anim">
+          <h2 class="font-[family-name:var(--font-ui)] text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-[#7F0000] m-0 mb-3 tracking-[-0.01em] rtl:font-[family-name:var(--font-fa-display)] rtl:font-normal rtl:tracking-normal">{{ i18n.t('ABOUT.CONTACT.HEADING') }}</h2>
+          <div class="w-10 h-[2px] bg-[#7F0000] mb-7" aria-hidden="true"></div>
+
+          <!-- Intro paragraph -->
+          @if (i18n.t('ABOUT.CONTACT.INTRO')) {
+            <p class="font-[family-name:var(--font-ui)] text-[0.9375rem] font-normal text-[var(--text-secondary)] leading-[1.75] mb-6 rtl:font-[family-name:var(--font-fa)] rtl:text-[1rem] rtl:leading-[2]">{{ i18n.t('ABOUT.CONTACT.INTRO') }}</p>
+          }
+
+          <!-- Contact letterhead (Latin script → forced LTR) -->
+          <div dir="ltr" class="p-7 max-[600px]:p-4 bg-[var(--bg-card)] border border-[var(--border)] rounded-[6px] text-left">
+            <address class="not-italic flex flex-col gap-2">
+              @if (i18n.t('ABOUT.CONTACT.ORG')) {
+                <span class="font-[family-name:var(--font-ui)] text-[0.9rem] font-semibold text-[#7F0000] leading-[1.6]">{{ i18n.t('ABOUT.CONTACT.ORG') }}</span>
+              }
+              <span class="font-[family-name:var(--font-ui)] text-[0.875rem] font-normal text-[var(--text-secondary)] leading-[1.7]">{{ i18n.t('ABOUT.CONTACT.ADDR_POBOX') }}</span>
+              <span class="font-[family-name:var(--font-ui)] text-[0.875rem] font-normal text-[var(--text-secondary)] leading-[1.7]">{{ i18n.t('ABOUT.CONTACT.ADDR_CITY') }}</span>
+              <span class="font-[family-name:var(--font-ui)] text-[0.875rem] font-normal text-[var(--text-secondary)] leading-[1.7]">{{ i18n.t('ABOUT.CONTACT.EMAIL_LABEL') }}:
+                <a class="text-[#7F0000] no-underline transition-colors duration-200 hover:text-[#A30000] break-all" href="mailto:iranianoralhistory@gmx.de">{{ i18n.t('ABOUT.CONTACT.EMAIL') }}</a>
+              </span>
+              <a class="font-[family-name:var(--font-ui)] text-[0.875rem] font-normal text-[#7F0000] no-underline transition-colors duration-200 hover:text-[#A30000] leading-[1.7] break-all" href="https://www.iranianoralhistory.de" target="_blank" rel="noopener noreferrer">{{ i18n.t('ABOUT.CONTACT.WEBSITE') }}</a>
+            </address>
+          </div>
+        </article>
+      }
+
+    </main>
+  </div>
+
+</div>
+
+

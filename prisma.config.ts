@@ -18,9 +18,10 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 export default defineConfig({
-  schema: 'libs/backend/database/prisma/schema.prisma',
+  schema: 'libs/backend/shared/database/prisma/schema.prisma',
   migrations: {
-    path: 'libs/backend/database/prisma/migrations',
+    path: 'libs/backend/shared/database/prisma/migrations',
+    seed: 'ts-node --project tsconfig.base.json --transpile-only libs/backend/shared/database/prisma/seed.ts',
   },
   datasource: {
     url: process.env.DATABASE_URL,

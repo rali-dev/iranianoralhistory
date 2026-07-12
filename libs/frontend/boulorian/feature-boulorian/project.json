@@ -1,0 +1,21 @@
+{
+  "name": "frontend-boulorian-feature-boulorian",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/boulorian/feature-boulorian/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": ["scope:feature", "platform:frontend"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/frontend/boulorian/feature-boulorian/jest.config.cts",
+        "tsConfig": "libs/frontend/boulorian/feature-boulorian/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

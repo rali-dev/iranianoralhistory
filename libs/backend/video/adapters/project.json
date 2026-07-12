@@ -1,0 +1,17 @@
+{
+  "name": "backend-video-adapters",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/backend/video/adapters/src",
+  "projectType": "library",
+  "tags": ["scope:adapters", "platform:backend"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/backend/video/adapters/jest.config.cts",
+        "tsConfig": "libs/backend/video/adapters/tsconfig.spec.json"
+      }
+    }
+  }
+}

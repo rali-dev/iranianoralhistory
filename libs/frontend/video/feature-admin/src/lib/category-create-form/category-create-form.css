@@ -1,0 +1,11 @@
+/* CategoryCreateFormComponent inherits all admin-* styles via :host ::ng-deep in admin-page.css */
+
+:host ::ng-deep .admin-form-grid--cat {
+  grid-template-columns: 1fr auto;
+}
+
+@media (max-width: 768px) {
+  :host ::ng-deep .admin-form-grid--cat {
+    grid-template-columns: 1fr;
+  }
+}
