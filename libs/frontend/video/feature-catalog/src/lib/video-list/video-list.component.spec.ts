@@ -80,6 +80,8 @@ async function createComponent() {
 describe('VideoListComponent', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockI18n.lang.mockReturnValue('de');
+    mockI18n.isRtl.mockReturnValue(false);
     favoritesStore.setIds([]);
     authStore.clear();
   });
@@ -378,6 +380,431 @@ describe('VideoListComponent', () => {
       component.selectedSlug.set('person-ali');
 
       expect(component.hasActiveFilter()).toBe(true);
+    });
+  });
+
+  describe('toggleFavorite() error rollback', () => {
+    it('rolls back the optimistic add when addFavorite errors', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockFavoriteApi.addFavorite as jest.Mock).mockReturnValue(throwError(() => new Error('fail')));
+      const { component } = await createComponent();
+      authStore.setUser({ id: 'u-1', email: 'u@t.de', role: 'USER', createdAt: new Date(), updatedAt: new Date() });
+
+      const event = { stopPropagation: jest.fn() } as unknown as MouseEvent;
+      component.toggleFavorite(event, 'v-err');
+
+      expect(mockFavoriteApi.addFavorite).toHaveBeenCalledWith('v-err');
+      expect(favoritesStore.ids().has('v-err')).toBe(false);
+    });
+
+    it('rolls back the optimistic remove when removeFavorite errors', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockFavoriteApi.removeFavorite as jest.Mock).mockReturnValue(throwError(() => new Error('fail')));
+      favoritesStore.setIds(['v-keep']);
+      const { component } = await createComponent();
+      authStore.setUser({ id: 'u-1', email: 'u@t.de', role: 'USER', createdAt: new Date(), updatedAt: new Date() });
+
+      const event = { stopPropagation: jest.fn() } as unknown as MouseEvent;
+      component.toggleFavorite(event, 'v-keep');
+
+      expect(mockFavoriteApi.removeFavorite).toHaveBeenCalledWith('v-keep');
+      expect(favoritesStore.ids().has('v-keep')).toBe(true);
+    });
+  });
+
+  describe('toggleFilter() and panel navigation', () => {
+    it('opens the dropdown without resetting the panel', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.collectionPanel.set('persons');
+
+      const event = { stopPropagation: jest.fn() } as unknown as MouseEvent;
+      component.toggleFilter(event);
+
+      expect(event.stopPropagation).toHaveBeenCalled();
+      expect(component.filterOpen()).toBe(true);
+      expect(component.collectionPanel()).toBe('persons');
+    });
+
+    it('closes the dropdown and resets the panel to main', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.filterOpen.set(true);
+      component.collectionPanel.set('type-select');
+
+      const event = { stopPropagation: jest.fn() } as unknown as MouseEvent;
+      component.toggleFilter(event);
+
+      expect(component.filterOpen()).toBe(false);
+      expect(component.collectionPanel()).toBe('main');
+    });
+
+    it('navigates forward and back through the collection panels', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+
+      component.openCollections();
+      expect(component.collectionPanel()).toBe('type-select');
+
+      component.openPersons();
+      expect(component.collectionPanel()).toBe('persons');
+
+      component.goBackToTypeSelect();
+      expect(component.collectionPanel()).toBe('type-select');
+
+      component.openTopics();
+      expect(component.collectionPanel()).toBe('topics');
+
+      component.goBackToMain();
+      expect(component.collectionPanel()).toBe('main');
+    });
+  });
+
+  describe('onDocumentClick()', () => {
+    it('closes the filter dropdown and resets the panel when clicking outside', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.filterOpen.set(true);
+      component.collectionPanel.set('persons');
+
+      const outside = document.createElement('div');
+      component.onDocumentClick({ target: outside } as unknown as MouseEvent);
+
+      expect(component.filterOpen()).toBe(false);
+      expect(component.collectionPanel()).toBe('main');
+    });
+
+    it('keeps the dropdown open when the click is inside .filter-dropdown', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.filterOpen.set(true);
+      component.collectionPanel.set('type-select');
+
+      const inside = document.createElement('div');
+      inside.className = 'filter-dropdown';
+      component.onDocumentClick({ target: inside } as unknown as MouseEvent);
+
+      expect(component.filterOpen()).toBe(true);
+      expect(component.collectionPanel()).toBe('type-select');
+    });
+  });
+
+  describe('onEscapeKey()', () => {
+    it('closes the modal when it is open', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.selectedVideo.set(buildVideo() as any);
+      component.modalOpen.set(true);
+
+      component.onEscapeKey();
+
+      expect(component.modalOpen()).toBe(false);
+      expect(component.selectedVideo()).toBeNull();
+    });
+
+    it('closes the doc drawer when no modal is open', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.docDrawerVideo.set(buildVideo() as any);
+
+      component.onEscapeKey();
+
+      expect(component.docDrawerVideo()).toBeNull();
+    });
+  });
+
+  describe('handleCardKey()', () => {
+    it('opens the modal on Enter and prevents default', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      const video = buildVideo();
+      const event = { key: 'Enter', preventDefault: jest.fn() } as unknown as KeyboardEvent;
+
+      component.handleCardKey(event, video as any);
+
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(component.modalOpen()).toBe(true);
+      expect(component.selectedVideo()).toEqual(video);
+    });
+
+    it('opens the modal on Space and prevents default', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      const video = buildVideo();
+      const event = { key: ' ', preventDefault: jest.fn() } as unknown as KeyboardEvent;
+
+      component.handleCardKey(event, video as any);
+
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(component.modalOpen()).toBe(true);
+    });
+
+    it('ignores other keys', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      const video = buildVideo();
+      const event = { key: 'a', preventDefault: jest.fn() } as unknown as KeyboardEvent;
+
+      component.handleCardKey(event, video as any);
+
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      expect(component.modalOpen()).toBe(false);
+    });
+  });
+
+  describe('openDocs() / closeDocs()', () => {
+    it('sets docDrawerVideo and stops propagation on openDocs', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      const video = buildVideo();
+      const event = { stopPropagation: jest.fn() } as unknown as MouseEvent;
+
+      component.openDocs(event, video as any);
+
+      expect(event.stopPropagation).toHaveBeenCalled();
+      expect(component.docDrawerVideo()).toEqual(video);
+    });
+
+    it('clears docDrawerVideo on closeDocs', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.docDrawerVideo.set(buildVideo() as any);
+
+      component.closeDocs();
+
+      expect(component.docDrawerVideo()).toBeNull();
+    });
+  });
+
+  describe('safeEmbedUrl()', () => {
+    it('builds a sanitized Vimeo embed url from the selected video', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.selectedVideo.set(buildVideo('v-1', { vimeoId: '987654321' }) as any);
+
+      const url = component.safeEmbedUrl();
+
+      expect(mockSanitizer.bypassSecurityTrustResourceUrl).toHaveBeenCalledWith(
+        'https://player.vimeo.com/video/987654321',
+      );
+      expect(url).toBe('https://player.vimeo.com/video/987654321');
+    });
+
+    it('falls back to an empty vimeo id when no video is selected', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+
+      const url = component.safeEmbedUrl();
+
+      expect(url).toBe('https://player.vimeo.com/video/');
+    });
+  });
+
+  describe('activeFilterLabel()', () => {
+    it('returns null when no slug is selected', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+
+      expect(component.activeFilterLabel()).toBeNull();
+    });
+
+    it('returns the collection name in the active language', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.collections.set([buildCollection('person-ali') as any]);
+      component.selectedSlug.set('person-ali');
+
+      expect(component.activeFilterLabel()).toBe('Ali');
+    });
+
+    it('returns null when the selected slug has no matching collection', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.collections.set([]);
+      component.selectedSlug.set('ghost');
+
+      expect(component.activeFilterLabel()).toBeNull();
+    });
+  });
+
+  describe('emptyMessage()', () => {
+    it('returns the search-empty message when a query is present', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.searchQuery.set('foo');
+
+      expect(component.emptyMessage()).toBe('ARCHIVE.SEARCH_EMPTY');
+      expect(mockI18n.t).toHaveBeenCalledWith('ARCHIVE.SEARCH_EMPTY', { q: 'foo' });
+    });
+
+    it('returns the empty-favorites message in favorites mode', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.showFavoritesOnly.set(true);
+
+      expect(component.emptyMessage()).toBe('ARCHIVE.EMPTY_FAVORITES');
+    });
+
+    it('returns the generic empty message otherwise', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+
+      expect(component.emptyMessage()).toBe('ARCHIVE.EMPTY');
+    });
+  });
+
+  describe('language selection', () => {
+    it('getTitle returns the title for the active language (de/en/fa)', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      const video = buildVideo('v-1', { title: { de: 'DeTitle', en: 'EnTitle', fa: 'FaTitle' } });
+
+      mockI18n.lang.mockReturnValue('de');
+      expect(component.getTitle(video as any)).toBe('DeTitle');
+      mockI18n.lang.mockReturnValue('en');
+      expect(component.getTitle(video as any)).toBe('EnTitle');
+      mockI18n.lang.mockReturnValue('fa');
+      expect(component.getTitle(video as any)).toBe('FaTitle');
+    });
+
+    it('getTitle returns an empty string for a null video', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+
+      expect(component.getTitle(null)).toBe('');
+    });
+
+    it('getDescription returns the description for the active language', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      const video = buildVideo('v-1', { description: { de: 'DeDesc', en: 'EnDesc', fa: 'FaDesc' } });
+
+      mockI18n.lang.mockReturnValue('en');
+      expect(component.getDescription(video as any)).toBe('EnDesc');
+      mockI18n.lang.mockReturnValue('fa');
+      expect(component.getDescription(video as any)).toBe('FaDesc');
+    });
+
+    it('getDescription returns null when the video has no description', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      const video = buildVideo('v-1', { description: undefined });
+
+      expect(component.getDescription(video as any)).toBeNull();
+    });
+
+    it('getCollectionName returns the name for the active language', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      const col = buildCollection('person-ali');
+
+      mockI18n.lang.mockReturnValue('de');
+      expect(component.getCollectionName(col as any)).toBe('Ali');
+      mockI18n.lang.mockReturnValue('fa');
+      expect(component.getCollectionName(col as any)).toBe('علی');
+    });
+  });
+
+  describe('isFavorite()', () => {
+    it('reflects the favorites store membership', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      favoritesStore.setIds(['v-1']);
+
+      expect(component.isFavorite('v-1')).toBe(true);
+      expect(component.isFavorite('v-2')).toBe(false);
+    });
+  });
+
+  describe('search matching (via videos computed)', () => {
+    it('matches on description text', async () => {
+      const v1 = buildVideo('v-1', {
+        title: { de: 'AAA', en: 'AAA', fa: 'AAA' },
+        description: { de: 'RareDescriptionWord', en: 'RareDescriptionWord', fa: 'RareDescriptionWord' },
+      });
+      const v2 = buildVideo('v-2', {
+        title: { de: 'BBB', en: 'BBB', fa: 'BBB' },
+        description: { de: 'nothing', en: 'nothing', fa: 'nothing' },
+      });
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([v1, v2]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.ngOnInit();
+
+      component.searchQuery.set('raredescriptionword');
+
+      expect(component.videos()).toHaveLength(1);
+      expect(component.videos()[0].id).toBe('v-1');
+    });
+
+    it('matches on collection name', async () => {
+      const v1 = buildVideo('v-1', {
+        title: { de: 'AAA', en: 'AAA', fa: 'AAA' },
+        collections: [
+          { id: 'c-9', slug: 's-9', name: { de: 'UniqueCollectionName', en: 'UniqueCollectionName', fa: 'UniqueCollectionName' } },
+        ],
+      });
+      const v2 = buildVideo('v-2', {
+        title: { de: 'BBB', en: 'BBB', fa: 'BBB' },
+        collections: [],
+      });
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([v1, v2]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.ngOnInit();
+
+      component.searchQuery.set('uniquecollectionname');
+
+      expect(component.videos()).toHaveLength(1);
+      expect(component.videos()[0].id).toBe('v-1');
+    });
+
+    it('matches on document title', async () => {
+      const v1 = buildVideo('v-1', {
+        title: { de: 'AAA', en: 'AAA', fa: 'AAA' },
+        documents: [{ id: 'd-1', title: 'SecretDocumentTitle' }],
+      });
+      const v2 = buildVideo('v-2', {
+        title: { de: 'BBB', en: 'BBB', fa: 'BBB' },
+        documents: [],
+      });
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([v1, v2]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+      component.ngOnInit();
+
+      component.searchQuery.set('secretdocumenttitle');
+
+      expect(component.videos()).toHaveLength(1);
+      expect(component.videos()[0].id).toBe('v-1');
     });
   });
 });

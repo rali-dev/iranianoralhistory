@@ -111,6 +111,11 @@
     --accent-glow:   rgba(127, 0, 0, 0.08);
     --accent-glow-soft: rgba(127, 0, 0, 0.06);   /* weicher Bordeaux-Fill — Outline-Button-Hover + Auth-Input-Hintergrund */
     --accent-border: rgba(127, 0, 0, 0.25);
+    /* Semantisches Danger-Token — EIN Rot für Admin (BEM) und öffentliche Seiten (Auth/Katalog). */
+    --danger:        var(--danger);
+    --danger-fg:     var(--danger-fg);   /* Text/Vordergrund (etwas dunkler, bessere Lesbarkeit) */
+    --danger-bg:     #fdf3f2;   /* heller Alert-Hintergrund */
+    --danger-border: rgba(192, 57, 43, 0.28);
     --text-primary:   #0A0A0A;
     --text-secondary: #3D3D3D;
     --text-muted:     #777777;
@@ -484,7 +489,7 @@
     animation: toast-in 0.2s ease; max-width: min(320px, calc(100vw - 3rem));
   }
   .admin-toast--ok  { background: #1e8449; color: #fff; }
-  .admin-toast--err { background: #c0392b; color: #fff; }
+  .admin-toast--err { background: var(--danger); color: #fff; }
 
   /* ── Admin select — custom dropdown arrow ── */
   .admin-select {
@@ -756,7 +761,7 @@
   .admin-lang-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
   .admin-actions { display: flex; justify-content: flex-end; }
   .admin-alert { font-family: var(--font-ui); font-size: 0.8rem; padding: 0.6rem 0.9rem; border-left: 3px solid; }
-  .admin-alert--danger { background: #fff5f5; border-color: #c0392b; color: #c0392b; }
+  .admin-alert--danger { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
   .admin-alert--success { background: #f0fff4; border-color: #27ae60; color: #1e8449; }
   .admin-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--font-ui); font-size: 0.8rem; font-weight: 500; padding: 0.5rem 1rem; border: 1px solid transparent; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; }
   .admin-btn:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -764,9 +769,9 @@
   .admin-btn--primary:not(:disabled):hover { background: #a30000; }
   .admin-btn--outline { background: transparent; color: var(--accent); border-color: rgba(127,0,0,0.3); }
   .admin-btn--outline:not(:disabled):hover { background: rgba(127,0,0,0.06); }
-  .admin-btn--danger { background: #c0392b; color: #fff; }
-  .admin-btn--danger:not(:disabled):hover { background: #a93226; }
-  .admin-btn--danger-outline { background: transparent; color: #c0392b; border-color: rgba(192,57,43,0.35); }
+  .admin-btn--danger { background: var(--danger); color: #fff; }
+  .admin-btn--danger:not(:disabled):hover { background: var(--danger-fg); }
+  .admin-btn--danger-outline { background: transparent; color: var(--danger); border-color: rgba(192,57,43,0.35); }
   .admin-btn--danger-outline:not(:disabled):hover { background: rgba(192,57,43,0.06); }
   .admin-btn--sm { font-size: 0.75rem; padding: 0.3rem 0.75rem; }
   .admin-btn--xs { font-size: 0.7rem; padding: 0.2rem 0.5rem; }
