@@ -3,6 +3,7 @@ import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, Validati
 import { Router, RouterLink } from '@angular/router';
 import { IdentityApiService } from '@iranianoralhistory/frontend-identity-data-access';
 import { I18nService } from '@iranianoralhistory/frontend-shared-i18n';
+import { AlertComponent } from '@iranianoralhistory/frontend-shared-ui';
 
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   const pw = control.get('password')?.value;
@@ -13,7 +14,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'lib-register',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, AlertComponent],
   templateUrl: './register.component.html',
 })
 export class RegisterComponent {
@@ -59,7 +60,7 @@ export class RegisterComponent {
       error: (err) => {
         this.isLoading.set(false);
         this.apiError.set(
-          err?.error?.message ?? 'Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.',
+          err?.error?.message ?? this.i18n.t('AUTH.REGISTER.ERR_GENERIC'),
         );
       },
     });

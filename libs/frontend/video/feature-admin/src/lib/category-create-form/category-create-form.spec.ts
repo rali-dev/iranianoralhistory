@@ -111,5 +111,19 @@ describe('CategoryCreateFormComponent', () => {
 
       expect(component.form.error()).toBeTruthy();
     });
+
+    it('falls back to the i18n ERR_SAVE key when the error has no message', async () => {
+      (mockCollectionApi.create as jest.Mock).mockReturnValue(throwError(() => ({})));
+      const { component } = await createComponent();
+      component.slug.set('topic-exile');
+      component.nameDe.set('Exil');
+      component.nameEn.set('Exile');
+      component.nameFa.set('تبعید');
+
+      component.submit();
+
+      expect(component.form.error()).toBe('ADMIN.CAT.ERR_SAVE');
+      expect(mockI18n.t).toHaveBeenCalledWith('ADMIN.CAT.ERR_SAVE');
+    });
   });
 });

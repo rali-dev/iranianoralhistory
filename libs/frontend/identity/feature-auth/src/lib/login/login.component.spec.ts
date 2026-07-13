@@ -167,16 +167,18 @@ describe('LoginComponent', () => {
       expect(navigate).not.toHaveBeenCalled();
     });
 
-    it('falls back to the default message when the server sends none', async () => {
+    it('falls back to the LOCALIZED generic error key when the server sends none', async () => {
       (mockIdentity.login as jest.Mock).mockReturnValue(throwError(() => ({})));
       const { component } = await createComponent();
       component.form.setValue(VALID);
 
       component.submit();
 
-      expect(component.apiError()).toBe(
-        'Anmeldung fehlgeschlagen. Bitte prüfen Sie Ihre Eingaben.',
-      );
+      // Kein hartkodiertes Deutsch mehr: der Fallback läuft durch i18n.t(), damit
+      // EN/FA-Nutzer die Meldung in ihrer Sprache erhalten. Der (key)=>key-Stub
+      // gibt den Schlüssel zurück — der Test verankert, dass genau er benutzt wird.
+      expect(mockI18n.t).toHaveBeenCalledWith('AUTH.LOGIN.ERR_GENERIC');
+      expect(component.apiError()).toBe('AUTH.LOGIN.ERR_GENERIC');
     });
 
     it('resets isLoading to false after a failed login', async () => {

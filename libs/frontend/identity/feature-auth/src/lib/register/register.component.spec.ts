@@ -118,16 +118,16 @@ describe('RegisterComponent', () => {
       expect(navigate).not.toHaveBeenCalled();
     });
 
-    it('falls back to the default message when the server sends none', async () => {
+    it('falls back to the LOCALIZED generic error key when the server sends none', async () => {
       (mockIdentity.register as jest.Mock).mockReturnValue(throwError(() => ({})));
       const { component } = await createComponent();
       component.form.setValue(fill());
 
       component.submit();
 
-      expect(component.apiError()).toBe(
-        'Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.',
-      );
+      // Fallback läuft durch i18n.t() statt hartkodiertem Deutsch.
+      expect(mockI18n.t).toHaveBeenCalledWith('AUTH.REGISTER.ERR_GENERIC');
+      expect(component.apiError()).toBe('AUTH.REGISTER.ERR_GENERIC');
     });
   });
 });

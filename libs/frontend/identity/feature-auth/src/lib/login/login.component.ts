@@ -7,11 +7,12 @@ import {
   authStore,
 } from '@iranianoralhistory/frontend-identity-data-access';
 import { I18nService } from '@iranianoralhistory/frontend-shared-i18n';
+import { AlertComponent } from '@iranianoralhistory/frontend-shared-ui';
 
 @Component({
   selector: 'lib-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, AlertComponent],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
@@ -55,7 +56,7 @@ export class LoginComponent {
       },
       error: (err) => {
         this.apiError.set(
-          err?.error?.message ?? 'Anmeldung fehlgeschlagen. Bitte prüfen Sie Ihre Eingaben.',
+          err?.error?.message ?? this.i18n.t('AUTH.LOGIN.ERR_GENERIC'),
         );
       },
     });

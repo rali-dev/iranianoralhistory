@@ -319,6 +319,42 @@ describe('VideoListComponent', () => {
       expect(component.selectedVideo()).toBeNull();
       expect(component.modalOpen()).toBe(false);
     });
+
+    it('locks body scroll on openModal and restores it on closeModal', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+
+      component.openModal(buildVideo() as any);
+      expect(document.body.style.overflow).toBe('hidden');
+
+      component.closeModal();
+      expect(document.body.style.overflow).toBe('');
+    });
+
+    it('exits fullscreen on closeModal when a fullscreen element is active', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+
+      const exitFullscreen = jest.fn().mockResolvedValue(undefined);
+      Object.defineProperty(document, 'fullscreenElement', {
+        configurable: true,
+        value: document.createElement('div'),
+      });
+      Object.defineProperty(document, 'exitFullscreen', {
+        configurable: true,
+        value: exitFullscreen,
+      });
+
+      component.closeModal();
+
+      expect(exitFullscreen).toHaveBeenCalled();
+
+      // Restore the jsdom defaults so the mocked fullscreen state doesn't leak.
+      delete (document as unknown as Record<string, unknown>)['fullscreenElement'];
+      delete (document as unknown as Record<string, unknown>)['exitFullscreen'];
+    });
   });
 
   describe('onSearchInput() / clearSearch()', () => {
@@ -805,6 +841,18 @@ describe('VideoListComponent', () => {
 
       expect(component.videos()).toHaveLength(1);
       expect(component.videos()[0].id).toBe('v-1');
+    });
+  });
+
+  describe('loadThumbnails()', () => {
+    it('populates the thumbnails signal when getThumbnail returns a url', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([buildVideo('v-1', { vimeoId: '111222333' })]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockVideoApi.getThumbnail as jest.Mock).mockReturnValue(of('https://thumb.example/x.jpg'));
+      const { component } = await createComponent();
+      component.ngOnInit();
+
+      expect(component.thumbnails()['111222333']).toBe('https://thumb.example/x.jpg');
     });
   });
 });

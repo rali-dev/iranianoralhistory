@@ -105,5 +105,17 @@ describe('DocumentAddFormComponent', () => {
 
       expect(component.form.error()).toBeTruthy();
     });
+
+    it('falls back to the i18n ERR_SAVE key when the error has no message', async () => {
+      (mockVideoApi.addDocument as jest.Mock).mockReturnValue(throwError(() => ({})));
+      const { component } = await createComponent();
+      component.title.set('Zeugnis');
+      component.storagePath.set('docs/zeugnis.pdf');
+
+      component.submit();
+
+      expect(component.form.error()).toBe('ADMIN.DOC.ERR_SAVE');
+      expect(mockI18n.t).toHaveBeenCalledWith('ADMIN.DOC.ERR_SAVE');
+    });
   });
 });

@@ -166,6 +166,18 @@ describe('AboutComponent', () => {
       );
     });
 
+    it('openAsnadPdf() opens the asnad PDF in a new tab', async () => {
+      const { component } = await createComponent();
+
+      component.openAsnadPdf();
+
+      expect(window.open).toHaveBeenCalledWith(
+        'assets/about/asnad.pdf',
+        '_blank',
+        'noopener,noreferrer',
+      );
+    });
+
     it('openConferencePdf() opens the oral-history conference PDF', async () => {
       const { component } = await createComponent();
 

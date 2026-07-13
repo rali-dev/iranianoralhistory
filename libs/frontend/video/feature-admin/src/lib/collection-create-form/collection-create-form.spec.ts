@@ -131,5 +131,19 @@ describe('CollectionCreateFormComponent', () => {
 
       expect(component.form.error()).toBeTruthy();
     });
+
+    it('falls back to the i18n ERR_SAVE key when the error has no message', async () => {
+      (mockCollectionApi.create as jest.Mock).mockReturnValue(throwError(() => ({})));
+      const { component } = await createComponent();
+      component.slug.set('person-ali');
+      component.nameDe.set('Ali');
+      component.nameEn.set('Ali');
+      component.nameFa.set('علی');
+
+      component.submit();
+
+      expect(component.form.error()).toBe('ADMIN.COL.ERR_SAVE');
+      expect(mockI18n.t).toHaveBeenCalledWith('ADMIN.COL.ERR_SAVE');
+    });
   });
 });

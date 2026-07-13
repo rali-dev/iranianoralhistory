@@ -99,6 +99,17 @@ describe('AdminPageComponent', () => {
 
       expect(component.videosLoading()).toBe(false);
     });
+
+    it('sets collectionsLoading to false on error', async () => {
+      mockVideoApi.getAll.mockReturnValue(of([]));
+      mockCollectionApi.getAll.mockReturnValue(throwError(() => new Error('fail')));
+      const { component } = await createComponent();
+
+      component.ngOnInit();
+
+      expect(component.collectionsLoading()).toBe(false);
+      expect(component.collections()).toHaveLength(0);
+    });
   });
 
   describe('setTab()', () => {
@@ -217,6 +228,16 @@ describe('AdminPageComponent', () => {
       component.saveEditVideo('v-1');
 
       expect(component.savingVideoId()).toBeNull();
+    });
+
+    it('returns early without calling update when no editing state is set', async () => {
+      mockVideoApi.getAll.mockReturnValue(of([]));
+      mockCollectionApi.getAll.mockReturnValue(of([]));
+      const { component } = await createComponent();
+
+      component.saveEditVideo('v-1');
+
+      expect(mockVideoApi.update).not.toHaveBeenCalled();
     });
   });
 

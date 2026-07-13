@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { IdentityApiService } from '@iranianoralhistory/frontend-identity-data-access';
 import { I18nService } from '@iranianoralhistory/frontend-shared-i18n';
+import { AlertComponent } from '@iranianoralhistory/frontend-shared-ui';
 
 type Step = 'email' | 'code' | 'password' | 'success';
 
@@ -16,7 +17,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'lib-forgot-password',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, AlertComponent],
   templateUrl: './forgot-password.component.html',
 })
 export class ForgotPasswordComponent {
@@ -71,7 +72,8 @@ export class ForgotPasswordComponent {
         this.confirmedEmail = this.email.value;
         this.step.set('code');
       },
-      error: (err) => this.apiError.set(err?.error?.message ?? 'Ein Fehler ist aufgetreten.'),
+      error: (err) =>
+        this.apiError.set(err?.error?.message ?? this.i18n.t('AUTH.FORGOT_PASSWORD.ERR_GENERIC')),
     });
   }
 
@@ -87,7 +89,10 @@ export class ForgotPasswordComponent {
         this.confirmedCode = this.code.value;
         this.step.set('password');
       },
-      error: (err) => this.apiError.set(err?.error?.message ?? 'Ungültiger oder abgelaufener Code.'),
+      error: (err) =>
+        this.apiError.set(
+          err?.error?.message ?? this.i18n.t('AUTH.FORGOT_PASSWORD.ERR_CODE_INVALID'),
+        ),
     });
   }
 
@@ -104,7 +109,8 @@ export class ForgotPasswordComponent {
       finalize(() => this.isLoading.set(false)),
     ).subscribe({
       next: () => this.step.set('success'),
-      error: (err) => this.apiError.set(err?.error?.message ?? 'Ein Fehler ist aufgetreten.'),
+      error: (err) =>
+        this.apiError.set(err?.error?.message ?? this.i18n.t('AUTH.FORGOT_PASSWORD.ERR_GENERIC')),
     });
   }
 

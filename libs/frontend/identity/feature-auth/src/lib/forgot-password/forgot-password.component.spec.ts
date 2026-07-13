@@ -104,6 +104,17 @@ describe('ForgotPasswordComponent', () => {
       expect(component.step()).toBe('email');
       expect(component.isLoading()).toBe(false);
     });
+
+    it('falls back to the LOCALIZED generic error key when the server sends none', async () => {
+      (mockIdentity.forgotPassword as jest.Mock).mockReturnValue(throwError(() => ({})));
+      const { component } = await createComponent();
+      component.emailForm.setValue({ email: EMAIL });
+
+      component.submitEmail();
+
+      expect(mockI18n.t).toHaveBeenCalledWith('AUTH.FORGOT_PASSWORD.ERR_GENERIC');
+      expect(component.apiError()).toBe('AUTH.FORGOT_PASSWORD.ERR_GENERIC');
+    });
   });
 
   describe('submitCode()', () => {
@@ -142,6 +153,17 @@ describe('ForgotPasswordComponent', () => {
 
       expect(component.apiError()).toBe('Ungültiger Code');
       expect(component.step()).toBe('code');
+    });
+
+    it('falls back to the LOCALIZED invalid-code key when the server sends no message', async () => {
+      const { component } = await advanceToStep('code');
+      (mockIdentity.verifyResetCode as jest.Mock).mockReturnValue(throwError(() => ({})));
+      component.codeForm.setValue({ code: CODE });
+
+      component.submitCode();
+
+      expect(mockI18n.t).toHaveBeenCalledWith('AUTH.FORGOT_PASSWORD.ERR_CODE_INVALID');
+      expect(component.apiError()).toBe('AUTH.FORGOT_PASSWORD.ERR_CODE_INVALID');
     });
   });
 
@@ -183,6 +205,17 @@ describe('ForgotPasswordComponent', () => {
 
       expect(component.apiError()).toBe('Code abgelaufen');
       expect(component.step()).toBe('password');
+    });
+
+    it('falls back to the LOCALIZED generic error key when the server sends no message', async () => {
+      const { component } = await advanceToStep('password');
+      (mockIdentity.resetPassword as jest.Mock).mockReturnValue(throwError(() => ({})));
+      component.passwordForm.setValue({ newPassword: NEW_PW, confirmPassword: NEW_PW });
+
+      component.submitPassword();
+
+      expect(mockI18n.t).toHaveBeenCalledWith('AUTH.FORGOT_PASSWORD.ERR_GENERIC');
+      expect(component.apiError()).toBe('AUTH.FORGOT_PASSWORD.ERR_GENERIC');
     });
   });
 

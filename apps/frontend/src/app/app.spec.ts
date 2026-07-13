@@ -1,3 +1,4 @@
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -342,4 +343,48 @@ describe('App', () => {
       expect(dialog.querySelector('img')?.getAttribute('src')).toBe('assets/photo.jpg');
     });
   });
+
+  describe('isHomePage (toSignal over router NavigationEnd)', () => {
+    // Real routes are required because isHomePage reads the live router.url on
+    // every NavigationEnd — a mocked/empty router would never change it.
+    async function createRoutedApp() {
+      await TestBed.configureTestingModule({
+        imports: [App],
+        providers: [
+          provideRouter([
+            { path: '', component: RoutedStub },
+            { path: 'videos', component: RoutedStub },
+          ]),
+          { provide: IdentityApiService, useValue: mockIdentity },
+        ],
+      }).compileComponents();
+
+      const fixture = TestBed.createComponent(App);
+      return { fixture, component: fixture.componentInstance, router: TestBed.inject(Router) };
+    }
+
+    it('reports true once a NavigationEnd lands on "/"', async () => {
+      const { component, router } = await createRoutedApp();
+
+      // Move away first, then home, so the assertion reflects a real
+      // NavigationEnd emission rather than just the initialValue.
+      await router.navigateByUrl('/videos');
+      await router.navigateByUrl('/');
+      TestBed.flushEffects();
+
+      expect(component.isHomePage()).toBe(true);
+    });
+
+    it('reports false after navigating to a non-home route', async () => {
+      const { component, router } = await createRoutedApp();
+
+      await router.navigateByUrl('/videos');
+      TestBed.flushEffects();
+
+      expect(component.isHomePage()).toBe(false);
+    });
+  });
 });
+
+@Component({ template: '' })
+class RoutedStub {}

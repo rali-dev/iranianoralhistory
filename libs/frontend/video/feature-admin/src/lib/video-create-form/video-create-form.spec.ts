@@ -131,5 +131,19 @@ describe('VideoCreateFormComponent', () => {
 
       expect(component.form.error()).toBeTruthy();
     });
+
+    it('falls back to the i18n ERR_SAVE key when the error has no message', async () => {
+      (mockVideoApi.create as jest.Mock).mockReturnValue(throwError(() => ({})));
+      const { component } = await createComponent();
+      component.vimeoId.set('111222333');
+      component.titleDe.set('Titel');
+      component.titleEn.set('Title');
+      component.titleFa.set('عنوان');
+
+      component.submit();
+
+      expect(component.form.error()).toBe('ADMIN.VIDEO.ERR_SAVE');
+      expect(mockI18n.t).toHaveBeenCalledWith('ADMIN.VIDEO.ERR_SAVE');
+    });
   });
 });

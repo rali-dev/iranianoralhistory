@@ -56,4 +56,17 @@ describe('appConfig — initApp (APP_INITIALIZER)', () => {
     expect(setUser).not.toHaveBeenCalled();
     expect(setIds).not.toHaveBeenCalled();
   });
+
+  it('still hydrates the user when the favourites fetch fails (catchError swallows it)', async () => {
+    const user = { id: 'u1', email: 'a@b.de', role: 'USER' as const };
+    const identity = { getMe: () => of(user) };
+    const favoriteApi = {
+      getFavoriteVideoIds: () => throwError(() => new Error('500 favourites unavailable')),
+    };
+
+    await expect(run(initFactory()(identity, favoriteApi))).resolves.toBeUndefined();
+
+    expect(setUser).toHaveBeenCalledWith(user);
+    expect(setIds).not.toHaveBeenCalled();
+  });
 });
