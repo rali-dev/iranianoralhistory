@@ -1,0 +1,48 @@
+# render.yaml — Render Blueprint für das Iranian-Oral-History NestJS-Backend.
+# Ins Repo-Root committen, dann in Render: "New +" -> "Blueprint" -> dieses Repo.
+# Free-Tier Web Service. Die Migrationen laufen als LETZTER Build-Schritt, weil
+# Renders "Pre-Deploy Command" nur im Bezahltarif verfügbar ist.
+services:
+  - type: web
+    name: ioh-backend
+    runtime: node
+    plan: free
+    region: frankfurt            # oregon | ohio | virginia | frankfurt | singapore
+    branch: main
+    autoDeployTrigger: commit    # Deploy bei jedem Push auf `branch`
+    healthCheckPath: /api/health # GET /api/health -> 200 (prüft auch die DB; 503 wenn DB down)
+    # Alle Deps installieren (dev-deps tragen nx / webpack / prisma-CLI + dotenv),
+    # Prisma-Client generieren, Backend bauen, DANN Migrationen ZULETZT anwenden —
+    # so bricht ein Compile-Fehler den Deploy ab, BEVOR die DB angefasst wird.
+    buildCommand: >-
+      npm ci &&
+      npx prisma generate --schema=libs/backend/shared/database/prisma/schema.prisma &&
+      npx nx build backend &&
+      npx prisma migrate deploy --schema=libs/backend/shared/database/prisma/schema.prisma
+    startCommand: node dist/apps/backend/main.js
+    envVars:
+      # --- Nicht-geheime Laufzeit-Konfiguration ---
+      - key: NODE_ENV
+        value: production        # ERFORDERLICH: secure:true Auth-Cookies zur Laufzeit
+      - key: NODE_VERSION
+        value: "22"              # Angular-21-Toolchain braucht Node ^20.19 || ^22.12 || ^24
+      # --- Secrets & umgebungsspezifische Werte: im Render-Dashboard setzen, NIE in git ---
+      - key: DATABASE_URL        # Supabase Session-Pooler (IPv4, Host *.pooler.supabase.com, Port 5432)
+        sync: false
+      - key: JWT_SECRET          # >= 32 Zeichen; verschieden von JWT_REFRESH_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET  # >= 32 Zeichen
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_BUCKET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: CORS_ORIGINS        # z. B. https://your-app.vercel.app (kommasepariert, ohne Leerzeichen)
+        sync: false
+      - key: RESEND_FROM_ADDRESS # optional; weglassen für den App-Default
+        sync: false
+      # PORT NICHT setzen — Render injiziert ihn automatisch; die App liest process.env.PORT.
