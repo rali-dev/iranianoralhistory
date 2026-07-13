@@ -1,0 +1,1090 @@
+openapi: 3.1.0
+info:
+  title: Iranian Oral History API
+  version: 1.0.0
+  description: >
+    HTTP contract for the Iranian Oral History archive — a trilingual (DE/EN/FA)
+    oral-history video archive built as a DDD modular monolith on NestJS 11.
+
+
+    All routes are served under the global `/api` prefix (encoded in the server URL
+    below). Authentication uses **httpOnly cookies**: `access_token` (~15 min) is sent
+    on protected routes; `refresh_token` (~7 d) is used only by `POST /auth/refresh`.
+    Mutations of videos, documents, and collections require the `ADMIN` role.
+
+
+    Trilingual content is modelled as a nested `{ de, en, fa }` object. Errors are
+    mapped by global filters: Prisma unique-violation → 409, not-found → 404,
+    FK-violation → 400; domain validation failures → 400/409 as appropriate.
+  license:
+    name: Proprietary
+servers:
+  - url: http://localhost:3222/api
+    description: Local development (global prefix /api)
+
+tags:
+  - name: Auth
+    description: Registration, login, logout, token refresh, and password reset.
+  - name: Users
+    description: The authenticated user's own profile.
+  - name: Videos
+    description: Video catalogue and admin CRUD, plus attached documents.
+  - name: Documents
+    description: Signed-URL access to private source documents.
+  - name: Collections
+    description: Curated groupings of videos (PERSON / TOPIC) and admin CRUD.
+  - name: Favorites
+    description: A user's favourited videos.
+  - name: Health
+    description: Liveness / readiness probe.
+
+paths:
+  # ------------------------------------------------------------------ Auth
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDto'
+      responses:
+        '201':
+          description: Registration successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Registration successful
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in and receive auth cookies
+      description: >
+        On success sets httpOnly `access_token` and `refresh_token` cookies.
+        The refresh token is stored hashed server-side.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: Login successful. Auth cookies set.
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/SetAuthCookies'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Login successful
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Log out (clears cookies, revokes refresh hash)
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Logout successful. Auth cookies cleared.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Logout successful
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rotate the token pair using the refresh cookie
+      description: >
+        Authenticated by the `refresh_token` cookie (not the access cookie).
+        Issues a new access/refresh pair and rotates both cookies.
+      security:
+        - refreshCookie: []
+      responses:
+        '200':
+          description: Tokens refreshed. Cookies rotated.
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/SetAuthCookies'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Tokens refreshed
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request a password-reset code by email
+      description: >
+        Always returns 200 with a neutral message to avoid leaking whether an
+        account exists. If the email matches an account, a 6-digit code is emailed
+        (via Resend) and a hashed reset token is stored.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordDto'
+      responses:
+        '200':
+          description: Neutral acknowledgement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: >-
+                  Falls ein Konto mit dieser E-Mail-Adresse existiert, wurde ein Code gesendet.
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /auth/verify-reset-code:
+    post:
+      tags: [Auth]
+      summary: Verify a reset code without consuming it
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyResetCodeDto'
+      responses:
+        '200':
+          description: Code accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Code bestätigt.
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Set a new password using a verified code
+      description: >
+        Runs atomically (single Prisma `$transaction`): the reset token is deleted
+        and the new password hash is set together, so the code cannot be replayed.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordDto'
+      responses:
+        '200':
+          description: Password reset.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Passwort erfolgreich zurückgesetzt.
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  # ------------------------------------------------------------------ Users
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get the authenticated user's profile
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: The current user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/me/favorites:
+    get:
+      tags: [Favorites]
+      summary: List the current user's favourited video ids
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Array of video ids the user has favourited.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+              example:
+                - 6f1b2c34-5d6e-7f80-9a1b-2c3d4e5f6071
+                - 8a2c4e60-1f3d-4b5a-9c7e-0d1f2a3b4c5d
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ------------------------------------------------------------------ Videos
+  /videos:
+    get:
+      tags: [Videos]
+      summary: List all videos
+      security: []
+      responses:
+        '200':
+          description: All videos with their documents and collection refs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Video'
+    post:
+      tags: [Videos]
+      summary: Create a video (ADMIN)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVideoDto'
+      responses:
+        '201':
+          description: The created video.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /videos/{id}:
+    parameters:
+      - $ref: '#/components/parameters/VideoId'
+    get:
+      tags: [Videos]
+      summary: Get a video by id
+      security: []
+      responses:
+        '200':
+          description: The requested video.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Videos]
+      summary: Update a video (ADMIN)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVideoDto'
+      responses:
+        '200':
+          description: The updated video.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Videos]
+      summary: Delete a video (ADMIN)
+      description: Cascade-deletes the video's documents.
+      security:
+        - cookieAuth: []
+      responses:
+        '204':
+          description: Deleted.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /videos/{id}/documents:
+    parameters:
+      - $ref: '#/components/parameters/VideoId'
+    post:
+      tags: [Videos]
+      summary: Attach a document to a video (ADMIN)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDocumentDto'
+      responses:
+        '201':
+          description: The created document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /videos/{id}/documents/{docId}:
+    parameters:
+      - $ref: '#/components/parameters/VideoId'
+      - $ref: '#/components/parameters/DocId'
+    patch:
+      tags: [Videos]
+      summary: Update a document (ADMIN)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDocumentDto'
+      responses:
+        '200':
+          description: The updated document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Videos]
+      summary: Delete a document (ADMIN)
+      security:
+        - cookieAuth: []
+      responses:
+        '204':
+          description: Deleted.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ------------------------------------------------------------------ Documents
+  /documents/{docId}/signed-url:
+    parameters:
+      - $ref: '#/components/parameters/DocId'
+    get:
+      tags: [Documents]
+      summary: Redirect to a time-limited Signed URL for a document
+      description: >
+        Any authenticated user may fetch a signed URL for a published archive
+        document (archive content is public-after-login). Responds **302** with a
+        `Location` header pointing at a short-lived Supabase Signed URL; the browser
+        fetches the file bytes directly from storage. Unknown docIds return 404, and
+        the route is per-route rate-limited to deter enumeration.
+      security:
+        - cookieAuth: []
+      responses:
+        '302':
+          description: Redirect to the Supabase Signed URL.
+          headers:
+            Location:
+              description: Short-lived Supabase Signed URL.
+              schema:
+                type: string
+                format: uri
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  # ------------------------------------------------------------------ Collections
+  /collections:
+    get:
+      tags: [Collections]
+      summary: List all collections
+      security: []
+      responses:
+        '200':
+          description: All collections.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Collection'
+    post:
+      tags: [Collections]
+      summary: Create a collection (ADMIN)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCollectionDto'
+      responses:
+        '201':
+          description: The created collection.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /collections/{id}:
+    parameters:
+      - $ref: '#/components/parameters/CollectionId'
+    patch:
+      tags: [Collections]
+      summary: Update a collection (ADMIN)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCollectionDto'
+      responses:
+        '200':
+          description: The updated collection.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Collections]
+      summary: Delete a collection (ADMIN)
+      security:
+        - cookieAuth: []
+      responses:
+        '204':
+          description: Deleted.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /collections/{id}/videos/{videoId}:
+    parameters:
+      - $ref: '#/components/parameters/CollectionId'
+      - $ref: '#/components/parameters/VideoIdInPath'
+    post:
+      tags: [Collections]
+      summary: Assign a video to a collection (ADMIN)
+      security:
+        - cookieAuth: []
+      responses:
+        '201':
+          description: Video assigned to the collection.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Collections]
+      summary: Remove a video from a collection (ADMIN)
+      security:
+        - cookieAuth: []
+      responses:
+        '204':
+          description: Video removed from the collection.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ------------------------------------------------------------------ Favorites
+  /videos/{videoId}/favorite:
+    parameters:
+      - $ref: '#/components/parameters/VideoIdInPath'
+    post:
+      tags: [Favorites]
+      summary: Add a video to the current user's favourites
+      description: Idempotent — favouriting an already-favourited video is a no-op.
+      security:
+        - cookieAuth: []
+      responses:
+        '204':
+          description: Favourited.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    delete:
+      tags: [Favorites]
+      summary: Remove a video from the current user's favourites
+      security:
+        - cookieAuth: []
+      responses:
+        '204':
+          description: Un-favourited.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ------------------------------------------------------------------ Health
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness / readiness probe
+      description: Reports process health and pings the database.
+      security: []
+      responses:
+        '200':
+          description: Service healthy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+              example:
+                status: ok
+                info:
+                  database:
+                    status: up
+        '503':
+          description: Service unhealthy (e.g. database unreachable).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+              example:
+                status: error
+                error:
+                  database:
+                    status: down
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+      description: httpOnly access-token cookie (~15 min), set by /auth/login and /auth/refresh.
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: refresh_token
+      description: httpOnly refresh-token cookie (~7 d), used only by /auth/refresh.
+
+  parameters:
+    VideoId:
+      name: id
+      in: path
+      required: true
+      description: Video id.
+      schema:
+        type: string
+        format: uuid
+    VideoIdInPath:
+      name: videoId
+      in: path
+      required: true
+      description: Video id.
+      schema:
+        type: string
+        format: uuid
+    DocId:
+      name: docId
+      in: path
+      required: true
+      description: Document id.
+      schema:
+        type: string
+        format: uuid
+    CollectionId:
+      name: id
+      in: path
+      required: true
+      description: Collection id.
+      schema:
+        type: string
+        format: uuid
+
+  headers:
+    SetAuthCookies:
+      description: >
+        Sets httpOnly `access_token` and `refresh_token` cookies
+        (sameSite=strict; secure in production).
+      schema:
+        type: string
+
+  responses:
+    ValidationError:
+      description: Request body failed validation (unknown or invalid fields).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            statusCode: 400
+            message:
+              - email must be an email
+            error: Bad Request
+    Unauthorized:
+      description: Missing or invalid authentication.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            statusCode: 401
+            message: Unauthorized
+    Forbidden:
+      description: Authenticated but lacking the required role (ADMIN).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            statusCode: 403
+            message: Forbidden resource
+            error: Forbidden
+    NotFound:
+      description: Resource not found (Prisma P2025).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            statusCode: 404
+            message: Not Found
+    Conflict:
+      description: Unique-constraint violation (Prisma P2002) — e.g. duplicate vimeoId or slug.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            statusCode: 409
+            message: Conflict
+    TooManyRequests:
+      description: Rate limit exceeded (global 100 req / 60 s per IP).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            statusCode: 429
+            message: ThrottlerException: Too Many Requests
+
+  schemas:
+    # ---- Shared ----
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+      additionalProperties: false
+
+    Error:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        error:
+          type: string
+      required: [statusCode, message]
+
+    Translation:
+      type: object
+      description: Trilingual value — all three languages required.
+      properties:
+        de: { type: string }
+        en: { type: string }
+        fa: { type: string }
+      required: [de, en, fa]
+      additionalProperties: false
+
+    OptionalTranslation:
+      type: object
+      description: Trilingual value for partial updates — each language optional.
+      properties:
+        de: { type: string }
+        en: { type: string }
+        fa: { type: string }
+      additionalProperties: false
+
+    # ---- Auth DTOs ----
+    RegisterDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 20
+      required: [email, password]
+      additionalProperties: false
+
+    LoginDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required: [email, password]
+      additionalProperties: false
+
+    ForgotPasswordDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required: [email]
+      additionalProperties: false
+
+    VerifyResetCodeDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          minLength: 6
+          maxLength: 6
+          description: 6-character reset code emailed to the user.
+      required: [email, code]
+      additionalProperties: false
+
+    ResetPasswordDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          minLength: 6
+          maxLength: 6
+        newPassword:
+          type: string
+          minLength: 8
+          maxLength: 20
+      required: [email, code, newPassword]
+      additionalProperties: false
+
+    # ---- User ----
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/UserRole'
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, email, role]
+
+    UserRole:
+      type: string
+      enum: [USER, ADMIN]
+
+    # ---- Video ----
+    CreateVideoDto:
+      type: object
+      properties:
+        vimeoId:
+          type: string
+          description: Vimeo video id (validated as a VimeoId value object).
+        title:
+          $ref: '#/components/schemas/Translation'
+        description:
+          $ref: '#/components/schemas/Translation'
+      required: [vimeoId, title]
+      additionalProperties: false
+
+    UpdateVideoDto:
+      type: object
+      description: Partial update — any subset of fields.
+      properties:
+        vimeoId:
+          type: string
+        title:
+          $ref: '#/components/schemas/OptionalTranslation'
+        description:
+          oneOf:
+            - $ref: '#/components/schemas/OptionalTranslation'
+            - type: 'null'
+      additionalProperties: false
+
+    Video:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        vimeoId:
+          type: string
+        title:
+          $ref: '#/components/schemas/Translation'
+        description:
+          oneOf:
+            - $ref: '#/components/schemas/Translation'
+            - type: 'null'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+        collections:
+          type: array
+          items:
+            $ref: '#/components/schemas/VideoCollectionRef'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, vimeoId, title, documents, collections]
+
+    VideoCollectionRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        type:
+          $ref: '#/components/schemas/CollectionType'
+        name:
+          $ref: '#/components/schemas/Translation'
+      required: [id, slug, type, name]
+
+    # ---- Document ----
+    CreateDocumentDto:
+      type: object
+      properties:
+        title:
+          type: string
+        storagePath:
+          type: string
+          description: Object path within the private Supabase bucket.
+      required: [title, storagePath]
+      additionalProperties: false
+
+    UpdateDocumentDto:
+      type: object
+      properties:
+        title:
+          type: string
+        storagePath:
+          type: string
+      additionalProperties: false
+
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        storagePath:
+          type: string
+        videoId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, title, storagePath, videoId]
+
+    # ---- Collection ----
+    CollectionType:
+      type: string
+      enum: [PERSON, TOPIC]
+
+    CreateCollectionDto:
+      type: object
+      properties:
+        slug:
+          type: string
+        type:
+          $ref: '#/components/schemas/CollectionType'
+        name:
+          $ref: '#/components/schemas/Translation'
+        description:
+          $ref: '#/components/schemas/Translation'
+        sortOrder:
+          type: integer
+          minimum: 0
+      required: [slug, type, name]
+      additionalProperties: false
+
+    UpdateCollectionDto:
+      type: object
+      description: Partial update — any subset of fields.
+      properties:
+        slug:
+          type: string
+        name:
+          $ref: '#/components/schemas/OptionalTranslation'
+        description:
+          oneOf:
+            - $ref: '#/components/schemas/OptionalTranslation'
+            - type: 'null'
+        sortOrder:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+
+    Collection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        type:
+          $ref: '#/components/schemas/CollectionType'
+        name:
+          $ref: '#/components/schemas/Translation'
+        description:
+          oneOf:
+            - $ref: '#/components/schemas/Translation'
+            - type: 'null'
+        sortOrder:
+          type: integer
+        videoCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, slug, type, name, sortOrder, videoCount]
+
+    # ---- Health ----
+    HealthStatus:
+      type: object
+      description: Terminus-style health report.
+      properties:
+        status:
+          type: string
+          enum: [ok, error]
+        info:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+        error:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+        details:
+          type: object
+          additionalProperties: true
+      required: [status]
