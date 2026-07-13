@@ -14,8 +14,12 @@ services:
     # Alle Deps installieren (dev-deps tragen nx / webpack / prisma-CLI + dotenv),
     # Prisma-Client generieren, Backend bauen, DANN Migrationen ZULETZT anwenden —
     # so bricht ein Compile-Fehler den Deploy ab, BEVOR die DB angefasst wird.
+    # 'npm install' statt 'npm ci': die unter Windows erzeugte package-lock.json ist
+    # nicht streng deckungsgleich (npm ci bricht mit "Missing ... from lock file" ab).
+    # 'npm install' löst den Baum auf Renders Linux tolerant auf; --include=dev erzwingt
+    # die devDependencies trotz NODE_ENV=production (sonst fehlen nx/webpack/prisma/dotenv).
     buildCommand: >-
-      npm ci &&
+      npm install --include=dev --no-audit --no-fund &&
       npx prisma generate --schema=libs/backend/shared/database/prisma/schema.prisma &&
       npx nx build backend &&
       npx prisma migrate deploy --schema=libs/backend/shared/database/prisma/schema.prisma
