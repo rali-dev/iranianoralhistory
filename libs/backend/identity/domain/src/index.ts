@@ -4,5 +4,6 @@ export * from './lib/repositories/password-reset-repository.interface';
 export * from './lib/services/email-service.interface';
 export * from './lib/services/password-hasher.interface';
 export * from './lib/services/token-service.interface';
+export * from './lib/services/password-reset-transaction.interface';
 export * from './lib/value-objects/email.value-object';
 export * from './lib/events/user-registered.event';

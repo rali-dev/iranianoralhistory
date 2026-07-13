@@ -39,17 +39,20 @@ export class PrismaCollectionRepository implements ICollectionRepository {
   }
 
   async create(data: CreateCollectionInput): Promise<CollectionEntity> {
+    // Write-Pfad läuft durch die Domäne: `create` erzwingt die Invarianten und
+    // normalisiert (Slug-Trim), bevor irgendetwas persistiert wird.
+    const draft = CollectionEntity.create(data);
     const row = await this.prisma.collection.create({
       data: {
-        slug: data.slug,
-        type: data.type as PrismaCollectionType,
-        nameDe: data.name.de,
-        nameEn: data.name.en,
-        nameFa: data.name.fa,
-        descDe: data.description?.de,
-        descEn: data.description?.en,
-        descFa: data.description?.fa,
-        sortOrder: data.sortOrder,
+        slug: draft.slug,
+        type: draft.type as PrismaCollectionType,
+        nameDe: draft.name.de,
+        nameEn: draft.name.en,
+        nameFa: draft.name.fa,
+        descDe: draft.description?.de,
+        descEn: draft.description?.en,
+        descFa: draft.description?.fa,
+        sortOrder: draft.sortOrder,
       },
       include: { _count: { select: { videos: true } } },
     });
@@ -57,10 +60,13 @@ export class PrismaCollectionRepository implements ICollectionRepository {
   }
 
   async update(id: string, data: UpdateCollectionInput): Promise<CollectionEntity> {
+    // Invarianten auch auf dem Patch-Pfad erzwingen: ein leerer Slug oder ein
+    // leergeräumter Name (vom Optional-DTO durchgelassen) wird hier abgefangen.
+    CollectionEntity.assertValidUpdate(data);
     const row = await this.prisma.collection.update({
       where: { id },
       data: {
-        ...(data.slug !== undefined && { slug: data.slug }),
+        ...(data.slug !== undefined && { slug: data.slug.trim() }),
         ...(data.name?.de !== undefined && { nameDe: data.name.de }),
         ...(data.name?.en !== undefined && { nameEn: data.name.en }),
         ...(data.name?.fa !== undefined && { nameFa: data.name.fa }),

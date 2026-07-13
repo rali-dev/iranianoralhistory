@@ -1,4 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { CommandBus } from '@nestjs/cqrs';
 import { Request, Response } from 'express';
 import { JwtAuthGuard, JwtRefreshGuard } from '@iranianoralhistory/backend-shared-auth-infra';
@@ -31,6 +32,9 @@ export class AuthController {
     return this.commandBus.execute(new RegisterUserCommand(dto));
   }
 
+  // Verschärftes Rate-Limit gegen Credential-Stuffing — deutlich strenger als
+  // das globale 100/min. (Global bleibt als Obergrenze bestehen.)
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto, @Res() res: Response) {
@@ -62,6 +66,8 @@ export class AuthController {
     res.json({ message: 'Tokens refreshed' });
   }
 
+  // Anti-Enumeration / Anti-Spam für den Reset-Einstieg.
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<{ message: string }> {
@@ -69,6 +75,8 @@ export class AuthController {
     return { message: 'Falls ein Konto mit dieser E-Mail-Adresse existiert, wurde ein Code gesendet.' };
   }
 
+  // Strenges Limit gegen Brute-Force des 6-stelligen Codes.
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('verify-reset-code')
   @HttpCode(HttpStatus.OK)
   async verifyResetCode(@Body() dto: VerifyResetCodeDto): Promise<{ message: string }> {
@@ -76,6 +84,7 @@ export class AuthController {
     return { message: 'Code bestätigt.' };
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {

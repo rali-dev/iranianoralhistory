@@ -15,7 +15,6 @@ describe('Favorites (Integration)', () => {
   let userCookies: string[];
   let adminCookies: string[];
   let videoId: string;
-  let userId: string;
 
   beforeAll(async () => {
     ({ app, prisma } = await createTestApp());
@@ -30,10 +29,6 @@ describe('Favorites (Integration)', () => {
       .send({ email: userEmail, password: testPassword });
 
     userCookies = userLoginRes.headers['set-cookie'] as unknown as string[];
-    const userProfile = await request(app.getHttpServer())
-      .get('/api/users/me')
-      .set('Cookie', userCookies);
-    userId = userProfile.body.id;
 
     // create an admin for video setup
     await request(app.getHttpServer())
@@ -99,6 +94,41 @@ describe('Favorites (Integration)', () => {
       expect(res.status).toBe(204);
     });
 
+    // Repo nutzt upsert → doppeltes Favorisieren ist idempotent, kein 409/500
+    // und keine Duplikat-Zeile.
+    it('is idempotent — favouriting the same video again still returns 204', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/api/videos/${videoId}/favorite`)
+        .set('Cookie', userCookies);
+
+      expect(res.status).toBe(204);
+
+      const list = await request(app.getHttpServer())
+        .get('/api/users/me/favorites')
+        .set('Cookie', userCookies);
+      expect(list.body.filter((id: string) => id === videoId)).toHaveLength(1);
+    });
+
+    // Unbekannte videoId → FK-Verletzung (P2003) → 400, kein rohes 500.
+    it('returns 400 when favouriting a non-existent video (FK violation)', async () => {
+      const throwaway = await request(app.getHttpServer())
+        .post('/api/videos')
+        .set('Cookie', adminCookies)
+        .send({ vimeoId: `${Date.now()}999`, title: { de: 'Weg', en: 'Gone', fa: 'رفته' } });
+      const goneVideoId = throwaway.body.id as string;
+      await prisma.video.delete({ where: { id: goneVideoId } }).catch(() => null);
+
+      const res = await request(app.getHttpServer())
+        .post(`/api/videos/${goneVideoId}/favorite`)
+        .set('Cookie', userCookies);
+
+      expect(res.status).toBe(400);
+      // Ursache festnageln: FK-Filter (P2003), kein zufälliger Validierungs-400.
+      expect(res.body.message).toBe(
+        'The operation references a related record that does not exist.',
+      );
+    });
+
     it('the video appears in the favourites list after being added', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/users/me/favorites')
@@ -134,6 +164,15 @@ describe('Favorites (Integration)', () => {
 
       expect(res.status).toBe(200);
       expect(res.body).not.toContain(videoId);
+    });
+
+    // deleteMany → count 0 wenn kein Favorit existiert: idempotent, kein 404/500.
+    it('is idempotent — removing a favourite that is not set still returns 204', async () => {
+      const res = await request(app.getHttpServer())
+        .delete(`/api/videos/${videoId}/favorite`)
+        .set('Cookie', userCookies);
+
+      expect(res.status).toBe(204);
     });
 
     it('returns 401 without authentication', async () => {

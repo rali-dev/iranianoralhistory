@@ -13,6 +13,7 @@ import { BackendVideoAdaptersModule } from '@iranianoralhistory/backend-video-ad
 import { BackendCollectionAdaptersModule } from '@iranianoralhistory/backend-collection-adapters';
 import { BackendFavoriteInfrastructureModule } from '@iranianoralhistory/backend-favorite-infrastructure';
 import { BackendFavoriteAdaptersModule } from '@iranianoralhistory/backend-favorite-adapters';
+import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -34,6 +35,11 @@ import { BackendFavoriteAdaptersModule } from '@iranianoralhistory/backend-favor
     BackendVideoAdaptersModule,
     BackendCollectionAdaptersModule,
     BackendFavoriteAdaptersModule,
+  ],
+  controllers: [
+    // Betriebs-Endpunkt GET /api/health (Liveness/Readiness). Operative
+    // Querschnittsfunktion, daher im Composition Root statt in einem Adapter-Modul.
+    HealthController,
   ],
   providers: [
     // ThrottlerGuard global registrieren — schützt alle Routen.

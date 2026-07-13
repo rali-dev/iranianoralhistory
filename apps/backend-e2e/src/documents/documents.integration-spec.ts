@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { PrismaService } from '@iranianoralhistory/backend-shared-database';
-import { createTestApp } from '../support/app-helper';
+import { createTestApp, stubbedSignedUrl } from '../support/app-helper';
 
 jest.setTimeout(30000);
 
@@ -98,6 +98,17 @@ describe('Documents (Integration)', () => {
 
       expect(res.status).toBe(400);
     });
+
+    it('returns 400 when storagePath is missing', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/api/videos/${videoId}/documents`)
+        .set('Cookie', adminCookies)
+        .send({ title: 'No path' });
+
+      expect(res.status).toBe(400);
+      // Beweist, dass GENAU storagePath die Validierung auslöst (title ist gültig).
+      expect(JSON.stringify(res.body.message)).toContain('storagePath');
+    });
   });
 
   // ─── PATCH /api/videos/:id/documents/:docId ───────────────────────────────
@@ -157,6 +168,29 @@ describe('Documents (Integration)', () => {
         .redirects(0);
 
       expect(res.status).toBe(401);
+    });
+
+    // Positivpfad: authentifiziert + existierendes Dokument → 302-Redirect auf
+    // die (im Test gestubbte) Signed-URL. Der erwartete Location-Header beweist,
+    // dass der korrekte storagePath mit Default-Ablauf (3600s) an den Storage-
+    // Port gereicht wurde. Eigenes Dokument, da das obige oben gelöscht wurde.
+    it('redirects (302) an authenticated user to the signed URL of an existing document', async () => {
+      const storagePath = 'documents/signed-url-positive.pdf';
+      const createRes = await request(app.getHttpServer())
+        .post(`/api/videos/${videoId}/documents`)
+        .set('Cookie', adminCookies)
+        .send({ title: 'Signed URL Doc', storagePath });
+      const freshDocId = createRes.body.id as string;
+
+      const res = await request(app.getHttpServer())
+        .get(`/api/documents/${freshDocId}/signed-url`)
+        .set('Cookie', adminCookies)
+        .redirects(0);
+
+      expect(res.status).toBe(302);
+      expect(res.headers.location).toBe(stubbedSignedUrl(storagePath, 3600));
+
+      await prisma.document.delete({ where: { id: freshDocId } }).catch(() => null);
     });
   });
 

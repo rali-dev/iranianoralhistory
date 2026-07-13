@@ -8,6 +8,7 @@ const pastDate = new Date(Date.now() - 1000);
 
 const mockUserRepo = { findByEmail: jest.fn(), findById: jest.fn(), create: jest.fn(), updatePassword: jest.fn(), updateRefreshToken: jest.fn() };
 const mockResetRepo = { findByUserId: jest.fn(), upsert: jest.fn(), deleteByUserId: jest.fn() };
+const mockResetTx = { commitReset: jest.fn() };
 const mockPasswordHasher = { hash: jest.fn(), compare: jest.fn() };
 
 describe('ResetPasswordHandler', () => {
@@ -18,11 +19,12 @@ describe('ResetPasswordHandler', () => {
     handler = new ResetPasswordHandler(
       mockUserRepo as any,
       mockResetRepo as any,
+      mockResetTx as any,
       mockPasswordHasher as any,
     );
   });
 
-  it('updates the password and deletes the reset record on success', async () => {
+  it('commits the reset atomically (delete token + set password in one transaction)', async () => {
     mockUserRepo.findByEmail.mockResolvedValue(mockUser);
     mockResetRepo.findByUserId.mockResolvedValue({ tokenHash: 'hash', expiresAt: futureDate });
     mockPasswordHasher.compare.mockResolvedValue(true);
@@ -33,8 +35,12 @@ describe('ResetPasswordHandler', () => {
     );
 
     expect(mockPasswordHasher.hash).toHaveBeenCalledWith('NewPass1!');
-    expect(mockUserRepo.updatePassword).toHaveBeenCalledWith('user-uuid', 'new-hashed-password');
-    expect(mockResetRepo.deleteByUserId).toHaveBeenCalledWith('user-uuid');
+    // Beide Writes gehen durch die atomare Transaktion — NICHT mehr durch die
+    // einzelnen Repo-Methoden.
+    expect(mockResetTx.commitReset).toHaveBeenCalledWith('user-uuid', 'new-hashed-password');
+    expect(mockResetTx.commitReset).toHaveBeenCalledTimes(1);
+    expect(mockResetRepo.deleteByUserId).not.toHaveBeenCalled();
+    expect(mockUserRepo.updatePassword).not.toHaveBeenCalled();
   });
 
   it('throws BadRequestException when the user is not found', async () => {
@@ -44,7 +50,7 @@ describe('ResetPasswordHandler', () => {
       handler.execute(new ResetPasswordCommand({ email: 'no@example.com', code: '123456', newPassword: 'Pass!' })),
     ).rejects.toThrow(BadRequestException);
 
-    expect(mockUserRepo.updatePassword).not.toHaveBeenCalled();
+    expect(mockResetTx.commitReset).not.toHaveBeenCalled();
   });
 
   it('throws BadRequestException when no reset record exists (null record)', async () => {
@@ -56,11 +62,10 @@ describe('ResetPasswordHandler', () => {
     ).rejects.toThrow(BadRequestException);
 
     expect(mockPasswordHasher.compare).not.toHaveBeenCalled();
-    expect(mockResetRepo.deleteByUserId).not.toHaveBeenCalled();
-    expect(mockUserRepo.updatePassword).not.toHaveBeenCalled();
+    expect(mockResetTx.commitReset).not.toHaveBeenCalled();
   });
 
-  it('invalidates the reset token BEFORE updating the password (no reuse window)', async () => {
+  it('does not touch persistence before the code is verified', async () => {
     mockUserRepo.findByEmail.mockResolvedValue(mockUser);
     mockResetRepo.findByUserId.mockResolvedValue({ tokenHash: 'hash', expiresAt: futureDate });
     mockPasswordHasher.compare.mockResolvedValue(true);
@@ -70,9 +75,10 @@ describe('ResetPasswordHandler', () => {
       new ResetPasswordCommand({ email: 'test@example.com', code: '123456', newPassword: 'NewPass1!' }),
     );
 
-    const deleteOrder = mockResetRepo.deleteByUserId.mock.invocationCallOrder[0];
-    const updateOrder = mockUserRepo.updatePassword.mock.invocationCallOrder[0];
-    expect(deleteOrder).toBeLessThan(updateOrder);
+    // Die Verifikation (compare) läuft VOR dem atomaren Write.
+    const compareOrder = mockPasswordHasher.compare.mock.invocationCallOrder[0];
+    const commitOrder = mockResetTx.commitReset.mock.invocationCallOrder[0];
+    expect(compareOrder).toBeLessThan(commitOrder);
   });
 
   it('throws BadRequestException when the reset record has expired', async () => {
@@ -83,7 +89,7 @@ describe('ResetPasswordHandler', () => {
       handler.execute(new ResetPasswordCommand({ email: 'test@example.com', code: '123456', newPassword: 'Pass!' })),
     ).rejects.toThrow(BadRequestException);
 
-    expect(mockUserRepo.updatePassword).not.toHaveBeenCalled();
+    expect(mockResetTx.commitReset).not.toHaveBeenCalled();
   });
 
   it('throws BadRequestException when the code does not match', async () => {
@@ -95,7 +101,6 @@ describe('ResetPasswordHandler', () => {
       handler.execute(new ResetPasswordCommand({ email: 'test@example.com', code: '000000', newPassword: 'Pass!' })),
     ).rejects.toThrow(BadRequestException);
 
-    expect(mockUserRepo.updatePassword).not.toHaveBeenCalled();
-    expect(mockResetRepo.deleteByUserId).not.toHaveBeenCalled();
+    expect(mockResetTx.commitReset).not.toHaveBeenCalled();
   });
 });

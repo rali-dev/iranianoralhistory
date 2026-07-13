@@ -28,6 +28,14 @@ describe('ResendEmailService', () => {
     service = new ResendEmailService(fakeConfig);
   });
 
+  describe('constructor', () => {
+    it('throws when RESEND_API_KEY is missing', () => {
+      delete process.env['RESEND_API_KEY'];
+
+      expect(() => new ResendEmailService(fakeConfig)).toThrow('Missing RESEND_API_KEY');
+    });
+  });
+
   describe('sendPasswordResetCode()', () => {
     it('calls resend.emails.send with the correct recipient and subject', async () => {
       mockSend.mockResolvedValue({ data: {}, error: null });
@@ -49,6 +57,18 @@ describe('ResendEmailService', () => {
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({ from: 'no-reply@raioh.de' }),
+      );
+    });
+
+    it('falls back to the default from address when RESEND_FROM_ADDRESS is unset', async () => {
+      delete process.env['RESEND_FROM_ADDRESS'];
+      service = new ResendEmailService(fakeConfig);
+      mockSend.mockResolvedValue({ data: {}, error: null });
+
+      await service.sendPasswordResetCode('user@example.de', '123456');
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({ from: 'onboarding@resend.dev' }),
       );
     });
 

@@ -5,6 +5,8 @@ import {
   USER_REPOSITORY,
   IPasswordResetRepository,
   PASSWORD_RESET_REPOSITORY,
+  IPasswordResetTransaction,
+  PASSWORD_RESET_TX,
   IPasswordHasher,
   PASSWORD_HASHER,
 } from '@iranianoralhistory/backend-identity-domain';
@@ -18,6 +20,7 @@ export class ResetPasswordHandler
   constructor(
     @Inject(USER_REPOSITORY) private readonly userRepo: IUserRepository,
     @Inject(PASSWORD_RESET_REPOSITORY) private readonly resetRepo: IPasswordResetRepository,
+    @Inject(PASSWORD_RESET_TX) private readonly resetTx: IPasswordResetTransaction,
     @Inject(PASSWORD_HASHER) private readonly passwordHasher: IPasswordHasher,
   ) {}
 
@@ -35,11 +38,11 @@ export class ResetPasswordHandler
 
     const hashedPassword = await this.passwordHasher.hash(command.dto.newPassword);
 
-    // Reset-Token ZUERST invalidieren, dann das neue Passwort setzen. So kann
-    // ein Fehler zwischen den beiden Writes nie ein noch gültiges Token neben
-    // einem bereits geänderten Passwort hinterlassen (kein Reuse-Risiko).
-    // Hinweis: echte DB-Atomarität beider Writes wäre ein Unit-of-Work-Schritt.
-    await this.resetRepo.deleteByUserId(user.id);
-    await this.userRepo.updatePassword(user.id, hashedPassword);
+    // Beide Writes — Token invalidieren UND Passwort setzen — laufen atomar in
+    // EINER DB-Transaktion (Unit-of-Work). Schlägt einer fehl, wird der andere
+    // zurückgerollt: nie ein noch gültiges Token neben einem bereits geänderten
+    // Passwort (kein Reuse-Risiko), nie ein invalidiertes Token bei
+    // unverändertem Passwort.
+    await this.resetTx.commitReset(user.id, hashedPassword);
   }
 }

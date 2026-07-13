@@ -35,6 +35,22 @@ describe('PrismaFavoriteRepository', () => {
         update: {},
       });
     });
+
+    it('is idempotent when called twice with the same args', async () => {
+      userFavorite.upsert.mockResolvedValue({});
+
+      await repo.add('user-uuid-1', 'video-uuid-1');
+      await repo.add('user-uuid-1', 'video-uuid-1');
+
+      const expectedUpsert = {
+        where: { userId_videoId: { userId: 'user-uuid-1', videoId: 'video-uuid-1' } },
+        create: { userId: 'user-uuid-1', videoId: 'video-uuid-1' },
+        update: {},
+      };
+      expect(userFavorite.upsert).toHaveBeenCalledTimes(2);
+      expect(userFavorite.upsert).toHaveBeenNthCalledWith(1, expectedUpsert);
+      expect(userFavorite.upsert).toHaveBeenNthCalledWith(2, expectedUpsert);
+    });
   });
 
   describe('remove', () => {
@@ -43,6 +59,17 @@ describe('PrismaFavoriteRepository', () => {
 
       await repo.remove('user-uuid-1', 'video-uuid-1');
 
+      expect(userFavorite.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 'user-uuid-1', videoId: 'video-uuid-1' },
+      });
+    });
+
+    it('is idempotent — still issues the scoped deleteMany and resolves when count is 0', async () => {
+      userFavorite.deleteMany.mockResolvedValue({ count: 0 });
+
+      await expect(repo.remove('user-uuid-1', 'video-uuid-1')).resolves.toBeUndefined();
+
+      // Auch im „nichts zu löschen"-Fall muss der Query korrekt eingegrenzt sein.
       expect(userFavorite.deleteMany).toHaveBeenCalledWith({
         where: { userId: 'user-uuid-1', videoId: 'video-uuid-1' },
       });

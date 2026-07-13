@@ -34,4 +34,28 @@ describe('HTTP hardening (Integration)', () => {
     expect(res.headers['access-control-allow-origin']).toBe('http://localhost:4200');
     expect(res.headers['access-control-allow-credentials']).toBe('true');
   });
+
+  it('exposes a public health endpoint that pings the database', async () => {
+    const res = await request(app.getHttpServer()).get('/api/health');
+
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('ok');
+    expect(res.body.db).toBe('up');
+    expect(typeof res.body.timestamp).toBe('string');
+  });
+
+  it('rate-limits the password-reset entrypoint (per-route throttle)', async () => {
+    const server = app.getHttpServer();
+    const statuses: number[] = [];
+    // Route-Limit ist 10/min. Der 11. Versuch muss gedrosselt werden (429).
+    for (let i = 0; i < 11; i++) {
+      const res = await request(server)
+        .post('/api/auth/forgot-password')
+        .send({ email: 'throttle-probe@example.com' });
+      statuses.push(res.status);
+    }
+
+    expect(statuses.filter((s) => s === 429).length).toBeGreaterThan(0);
+    expect(statuses[0]).toBe(200);
+  });
 });

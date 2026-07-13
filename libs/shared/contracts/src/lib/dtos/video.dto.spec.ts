@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import { CreateVideoDto, UpdateVideoDto } from './video.dto';
+import { CreateVideoDto, UpdateVideoDto, CreateDocumentDto, UpdateDocumentDto } from './video.dto';
 
 function failedProps<T extends object>(cls: new () => T, payload: unknown): string[] {
   const dto = plainToInstance(cls, payload);
@@ -46,6 +46,36 @@ describe('video DTO validation', () => {
 
     it('accepts a partial title patch (optional languages)', () => {
       expect(failedProps(UpdateVideoDto, { title: { de: 'nur DE' } })).toEqual([]);
+    });
+  });
+});
+
+describe('document DTO validation', () => {
+  describe('CreateDocumentDto', () => {
+    it('accepts a valid title + storagePath', () => {
+      expect(failedProps(CreateDocumentDto, { title: 'Interview', storagePath: 'docs/interview.pdf' })).toEqual([]);
+    });
+
+    it('rejects a missing title', () => {
+      expect(failedProps(CreateDocumentDto, { storagePath: 'docs/interview.pdf' })).toContain('title');
+    });
+
+    it('rejects a missing storagePath', () => {
+      expect(failedProps(CreateDocumentDto, { title: 'Interview' })).toContain('storagePath');
+    });
+
+    it('rejects an empty-string title', () => {
+      expect(failedProps(CreateDocumentDto, { title: '', storagePath: 'docs/interview.pdf' })).toContain('title');
+    });
+  });
+
+  describe('UpdateDocumentDto', () => {
+    it('accepts an empty patch (everything optional)', () => {
+      expect(failedProps(UpdateDocumentDto, {})).toEqual([]);
+    });
+
+    it('accepts a partial title patch', () => {
+      expect(failedProps(UpdateDocumentDto, { title: 'Neuer Titel' })).toEqual([]);
     });
   });
 });

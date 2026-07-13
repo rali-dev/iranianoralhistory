@@ -58,6 +58,18 @@ describe('collection DTO validation', () => {
     it('accepts a partial name patch (optional languages)', () => {
       expect(failedProps(UpdateCollectionDto, { name: { de: 'nur DE' } })).toEqual([]);
     });
+
+    it('rejects a negative sortOrder', () => {
+      expect(failedProps(UpdateCollectionDto, { sortOrder: -1 })).toContain('sortOrder');
+    });
+
+    it('accepts a valid sortOrder of 0', () => {
+      expect(failedProps(UpdateCollectionDto, { sortOrder: 0 })).toEqual([]);
+    });
+
+    it('accepts a partial description patch (optional languages)', () => {
+      expect(failedProps(UpdateCollectionDto, { description: { de: 'nur DE' } })).toEqual([]);
+    });
   });
 
   describe('AssignVideoDto', () => {

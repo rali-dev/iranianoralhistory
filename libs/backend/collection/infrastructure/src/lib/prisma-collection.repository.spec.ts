@@ -264,6 +264,49 @@ describe('PrismaCollectionRepository', () => {
       });
     });
 
+    it('patches only descDe when only the German description is given', async () => {
+      collection.update.mockResolvedValue(buildCollectionRow());
+
+      await repo.update('coll-uuid-1', { description: { de: 'Only DE changed' } });
+
+      expect(collection.update).toHaveBeenCalledWith({
+        where: { id: 'coll-uuid-1' },
+        data: { descDe: 'Only DE changed' },
+        include: COUNT_INCLUDE,
+      });
+    });
+
+    it('patches only descFa when only the Farsi description is given', async () => {
+      collection.update.mockResolvedValue(buildCollectionRow());
+
+      await repo.update('coll-uuid-1', { description: { fa: 'فقط فارسی' } });
+
+      expect(collection.update).toHaveBeenCalledWith({
+        where: { id: 'coll-uuid-1' },
+        data: { descFa: 'فقط فارسی' },
+        include: COUNT_INCLUDE,
+      });
+    });
+
+    it('trims the slug before persisting', async () => {
+      collection.update.mockResolvedValue(buildCollectionRow());
+
+      await repo.update('coll-uuid-1', { slug: '  spaced-slug  ' });
+
+      expect(collection.update).toHaveBeenCalledWith({
+        where: { id: 'coll-uuid-1' },
+        data: { slug: 'spaced-slug' },
+        include: COUNT_INCLUDE,
+      });
+    });
+
+    it('rejects an invalid patch (blank slug) before touching the database', async () => {
+      await expect(repo.update('coll-uuid-1', { slug: '   ' })).rejects.toThrow(
+        /slug must not be empty/,
+      );
+      expect(collection.update).not.toHaveBeenCalled();
+    });
+
     it('updates individual name languages independently', async () => {
       collection.update.mockResolvedValue(buildCollectionRow());
 
@@ -285,6 +328,17 @@ describe('PrismaCollectionRepository', () => {
 
       expect(collection.delete).toHaveBeenCalledWith({ where: { id: 'coll-uuid-1' } });
     });
+
+    // Das Repo fängt Prisma-Fehler NICHT ab (kein try/catch) — es reicht sie
+    // unverändert nach oben, wo der globale PrismaExceptionFilter sie übersetzt.
+    // Der Test verankert genau dieses Nicht-Schlucken (Identität des Fehlers);
+    // die HTTP-Übersetzung selbst prüft der Integrationstest.
+    it('does not swallow a rejection from prisma.delete — re-throws it verbatim', async () => {
+      const err = new Error('delete failed');
+      collection.delete.mockRejectedValue(err);
+
+      await expect(repo.delete('missing-id')).rejects.toBe(err);
+    });
   });
 
   describe('assignVideo', () => {
@@ -299,6 +353,15 @@ describe('PrismaCollectionRepository', () => {
         update: {},
       });
     });
+
+    // Ein FK-Verstoß (unbekannte collection/video) darf nicht geschluckt werden;
+    // die 400-Übersetzung des P2003 prüft der Integrationstest.
+    it('does not swallow a rejection from prisma.upsert — re-throws it verbatim', async () => {
+      const err = new Error('fk violation');
+      videoCollection.upsert.mockRejectedValue(err);
+
+      await expect(repo.assignVideo('ghost-video', 'ghost-coll')).rejects.toBe(err);
+    });
   });
 
   describe('removeVideo', () => {
@@ -310,6 +373,22 @@ describe('PrismaCollectionRepository', () => {
       expect(videoCollection.deleteMany).toHaveBeenCalledWith({
         where: { videoId: 'video-uuid-1', collectionId: 'coll-uuid-1' },
       });
+    });
+
+    it('is idempotent — still issues the scoped deleteMany and resolves when count is 0', async () => {
+      videoCollection.deleteMany.mockResolvedValue({ count: 0 });
+
+      await expect(repo.removeVideo('video-uuid-1', 'coll-uuid-1')).resolves.toBeUndefined();
+      expect(videoCollection.deleteMany).toHaveBeenCalledWith({
+        where: { videoId: 'video-uuid-1', collectionId: 'coll-uuid-1' },
+      });
+    });
+
+    it('does not swallow an unexpected database rejection — re-throws it verbatim', async () => {
+      const err = new Error('db down');
+      videoCollection.deleteMany.mockRejectedValue(err);
+
+      await expect(repo.removeVideo('v', 'c')).rejects.toBe(err);
     });
   });
 });

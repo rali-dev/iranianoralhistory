@@ -129,6 +129,24 @@ describe('Collections (Integration)', () => {
 
       expect(res.status).toBe(400);
     });
+
+    // Unique-Constraint auf slug → Prisma P2002 → PrismaExceptionFilter → 409.
+    it('returns 409 when the slug already exists', async () => {
+      const slug = `dup-${Date.now()}`;
+      const first = await request(app.getHttpServer())
+        .post('/api/collections')
+        .set('Cookie', adminCookies)
+        .send({ slug, type: 'TOPIC', name: { de: 'Dup', en: 'Dup', fa: 'تکراری' } });
+      expect(first.status).toBe(201);
+
+      const second = await request(app.getHttpServer())
+        .post('/api/collections')
+        .set('Cookie', adminCookies)
+        .send({ slug, type: 'TOPIC', name: { de: 'Dup2', en: 'Dup2', fa: 'تکراری۲' } });
+      expect(second.status).toBe(409);
+
+      await prisma.collection.delete({ where: { id: first.body.id } }).catch(() => null);
+    });
   });
 
   // ─── PATCH /api/collections/:id ──────────────────────────────────────────
@@ -225,6 +243,50 @@ describe('Collections (Integration)', () => {
         .set('Cookie', adminCookies);
 
       expect(del.status).toBe(204);
+    });
+  });
+
+  // ─── Negative paths (Prisma errors → 4xx, not raw 500) ───────────────────
+  // Ein angelegtes-und-sofort-gelöschtes Objekt liefert eine gültig geformte,
+  // garantiert nicht existierende id — format-agnostisch für PATCH/DELETE/FK.
+
+  describe('Negative paths', () => {
+    let goneCollectionId: string;
+
+    beforeAll(async () => {
+      const created = await request(app.getHttpServer())
+        .post('/api/collections')
+        .set('Cookie', adminCookies)
+        .send({ slug: `gone-${Date.now()}`, type: 'TOPIC', name: { de: 'Weg', en: 'Gone', fa: 'رفته' } });
+      goneCollectionId = created.body.id;
+      await prisma.collection.delete({ where: { id: goneCollectionId } }).catch(() => null);
+    });
+
+    it('PATCH on an unknown collection id returns 404 (P2025), not 500', async () => {
+      const res = await request(app.getHttpServer())
+        .patch(`/api/collections/${goneCollectionId}`)
+        .set('Cookie', adminCookies)
+        .send({ sortOrder: 1 });
+      expect(res.status).toBe(404);
+    });
+
+    it('DELETE on an unknown collection id returns 404 (P2025), not 500', async () => {
+      const res = await request(app.getHttpServer())
+        .delete(`/api/collections/${goneCollectionId}`)
+        .set('Cookie', adminCookies);
+      expect(res.status).toBe(404);
+    });
+
+    it('assigning a video to an unknown collection returns 400 (P2003 FK), not 500', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/api/collections/${goneCollectionId}/videos/${createdVideoId}`)
+        .set('Cookie', adminCookies);
+      expect(res.status).toBe(400);
+      // Body-Message pinnt die URSACHE auf den FK-Filter — so kann der Test nicht
+      // versehentlich durch einen (anders verursachten) Validierungs-400 grün werden.
+      expect(res.body.message).toBe(
+        'The operation references a related record that does not exist.',
+      );
     });
   });
 
