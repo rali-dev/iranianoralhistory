@@ -112,8 +112,8 @@
     --accent-glow-soft: rgba(127, 0, 0, 0.06);   /* weicher Bordeaux-Fill — Outline-Button-Hover + Auth-Input-Hintergrund */
     --accent-border: rgba(127, 0, 0, 0.25);
     /* Semantisches Danger-Token — EIN Rot für Admin (BEM) und öffentliche Seiten (Auth/Katalog). */
-    --danger:        var(--danger);
-    --danger-fg:     var(--danger-fg);   /* Text/Vordergrund (etwas dunkler, bessere Lesbarkeit) */
+    --danger:        #c0392b;
+    --danger-fg:     #a93226;   /* Text/Vordergrund (etwas dunkler, bessere Lesbarkeit) */
     --danger-bg:     #fdf3f2;   /* heller Alert-Hintergrund */
     --danger-border: rgba(192, 57, 43, 0.28);
     --text-primary:   #0A0A0A;

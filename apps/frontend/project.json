@@ -6,8 +6,24 @@
   "sourceRoot": "apps/frontend/src",
   "tags": ["scope:app", "platform:frontend"],
   "targets": {
+    "build-styles": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/apps/frontend/src/styles.css",
+        "{workspaceRoot}/scripts/build-styles.mjs",
+        "{workspaceRoot}/apps/frontend/src/**/*.{html,ts}",
+        "{workspaceRoot}/libs/frontend/**/*.{html,ts}"
+      ],
+      "outputs": ["{workspaceRoot}/apps/frontend/src/styles.generated.css"],
+      "options": {
+        "command": "node scripts/build-styles.mjs",
+        "cwd": "{workspaceRoot}"
+      }
+    },
     "build": {
       "executor": "@angular/build:application",
+      "dependsOn": ["build-styles", "^build"],
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/frontend",
@@ -52,6 +68,7 @@
     "serve": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
+      "dependsOn": ["build-styles"],
       "configurations": {
         "production": {
           "buildTarget": "frontend:build:production"

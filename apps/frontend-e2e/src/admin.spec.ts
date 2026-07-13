@@ -68,4 +68,42 @@ test.describe('Admin — RBAC guard & CMS (live app)', () => {
     // the create form reports success
     await expect(page.locator('.admin-alert--success')).toBeVisible();
   });
+
+  test('the delete-confirm button renders with a visible (non-transparent) background', async ({ page, request }) => {
+    const email = `e2e-admin-del-${Date.now()}@example.com`;
+    const vimeoId = `${Date.now()}`;
+    emailsToDelete.push(email);
+    vimeoIdsToDelete.push(vimeoId);
+
+    await registerViaApi(request, email);
+    await promoteToAdmin(email);
+    await loginViaUi(page, email);
+    await page.waitForURL(/\/admin/);
+
+    // seed a deletable row via the create form
+    await page.locator('#video-vimeo').fill(vimeoId);
+    await page.locator('#video-title-de').fill('E2E Delete DE');
+    await page.locator('#video-title-en').fill('E2E Delete EN');
+    await page.locator('#video-title-fa').fill('حذف آزمایشی');
+    await page
+      .locator('.admin-card', { has: page.locator('#video-vimeo') })
+      .locator('.admin-btn--primary')
+      .click();
+    await expect(page.locator('.admin-alert--success')).toBeVisible();
+
+    // open the delete confirmation on that video's row
+    const row = page.locator('.admin-list-item', { hasText: `Vimeo: ${vimeoId}` });
+    await expect(row).toBeVisible();
+    await row.locator('.admin-btn--danger-outline').click();
+
+    // Regression guard for the --danger token bug: the confirm button once
+    // rendered white text on a transparent background (invisible). Playwright's
+    // toBeVisible() still passes in that state — a laid-out button IS "visible" —
+    // so we assert the COMPUTED background is not transparent, which is exactly
+    // what the broken self-referential --danger token produced.
+    const confirm = row.locator('.admin-btn--danger');
+    await expect(confirm).toBeVisible();
+    await expect(confirm).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    // We intentionally do not confirm the deletion; afterEach cleans up the row.
+  });
 });
