@@ -35,6 +35,9 @@ reaches everything.
    colours. Their **light** values are byte-for-byte the originals — e.g. `text-black/65` becomes
    `color-mix(in srgb, var(--ink) 65%, transparent)` where `--ink:#000` reproduces `rgba(0,0,0,0.65)`
    exactly — so the day look is provably unchanged, while the same tokens carry the dark values.
+   The brand emblem (`RAIOH_O*.png`) is **black line-art on transparency**, so every place it appears —
+   the home hero logo *and* the nav brand logo — sits on the shared `--logo-plate` (white in day, warm
+   off-white `#F4EEE7` in night); without it the emblem would vanish on the dark nav ground.
 
 3. **Theme is a shared-UI concern, not app state.** A signal-based `ThemeService` (`providedIn:'root'`,
    in `frontend-shared-ui`, mirroring `ImageLightboxService`/`I18nService`) is the single source of

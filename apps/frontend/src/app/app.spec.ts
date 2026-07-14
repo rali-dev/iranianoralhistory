@@ -78,6 +78,18 @@ describe('App', () => {
       expect(el.querySelector('img[src="assets/brand/RAIOH_OH.png"]')).toBeTruthy();
     });
 
+    it('sits the nav brand logo on the shared logo plate (stays legible in dark mode)', async () => {
+      const { fixture } = await createComponent();
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      const logo = el.querySelector('img[src="assets/brand/RAIOH_OH.png"]');
+      const plate = logo?.closest('.ioh-spin-border');
+      // Same --logo-plate token as the home hero logo → black line-art emblem
+      // never renders on a bare dark surface.
+      expect(plate?.className).toContain('--logo-plate');
+    });
+
     it('renders a <router-outlet /> for feature pages', async () => {
       const { fixture } = await createComponent();
       fixture.detectChanges();
