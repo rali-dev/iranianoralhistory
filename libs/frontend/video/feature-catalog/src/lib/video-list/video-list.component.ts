@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -18,7 +18,7 @@ import { IVideo, ICollection, IVideoCollectionRef } from '@iranianoralhistory/sh
   imports: [CommonModule],
   templateUrl: './video-list.component.html',
 })
-export class VideoListComponent implements OnInit {
+export class VideoListComponent implements OnInit, OnDestroy {
   private readonly videoApi      = inject(VideoApiService);
   private readonly collectionApi = inject(CollectionApiService);
   private readonly favoriteApi   = inject(FavoriteApiService);
@@ -178,15 +178,33 @@ export class VideoListComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    // Safety-Net: Wird die Komponente zerstört, während das Modal noch offen ist
+    // (z. B. Browser-Zurück-Button, Back-Geste oder programmatische Navigation),
+    // muss die auf <body> gesetzte Scroll-Sperre freigegeben werden — sonst
+    // bliebe die gesamte App auf allen Folgeseiten unscrollbar.
+    if (this.modalOpen()) {
+      this.unlockBodyScroll();
+    }
+  }
+
   openModal(video: IVideo): void {
     this.selectedVideo.set(video);
     this.modalOpen.set(true);
-    document.body.style.overflow = 'hidden';
+    this.lockBodyScroll();
   }
 
   closeModal(): void {
     this.modalOpen.set(false);
     this.selectedVideo.set(null);
+    this.unlockBodyScroll();
+  }
+
+  private lockBodyScroll(): void {
+    document.body.style.overflow = 'hidden';
+  }
+
+  private unlockBodyScroll(): void {
     document.body.style.overflow = '';
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => { /* no-op */ });

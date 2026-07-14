@@ -357,6 +357,51 @@ describe('VideoListComponent', () => {
     });
   });
 
+  describe('ngOnDestroy()', () => {
+    it('releases the body scroll lock when destroyed while the modal is open (navigation safety-net)', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+
+      component.openModal(buildVideo() as any);
+      expect(document.body.style.overflow).toBe('hidden');
+
+      // Simulates the component being torn down by a router navigation while the
+      // modal is still open (e.g. the browser back button).
+      component.ngOnDestroy();
+
+      expect(document.body.style.overflow).toBe('');
+    });
+
+    it('does not touch the body scroll when destroyed with no modal open', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { component } = await createComponent();
+
+      // Simulate a lock owned by something else; the component must not clobber it.
+      document.body.style.overflow = 'hidden';
+      component.ngOnDestroy();
+
+      expect(document.body.style.overflow).toBe('hidden');
+      document.body.style.overflow = '';
+    });
+
+    it('releases the lock through the real Angular teardown (fixture.destroy) while a modal is open', async () => {
+      (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
+      (mockCollectionApi.getAll as jest.Mock).mockReturnValue(of([]));
+      const { fixture, component } = await createComponent();
+
+      component.openModal(buildVideo() as any);
+      expect(document.body.style.overflow).toBe('hidden');
+
+      // Destroys the component via Angular's own lifecycle (as a router navigation
+      // does), exercising the OnDestroy wiring end-to-end — not just a direct call.
+      fixture.destroy();
+
+      expect(document.body.style.overflow).toBe('');
+    });
+  });
+
   describe('onSearchInput() / clearSearch()', () => {
     it('updates searchQuery from the input event', async () => {
       (mockVideoApi.getAll as jest.Mock).mockReturnValue(of([]));
