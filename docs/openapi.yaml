@@ -30,7 +30,7 @@ tags:
   - name: Videos
     description: Video catalogue and admin CRUD, plus attached documents.
   - name: Documents
-    description: Signed-URL access to private source documents.
+    description: Public signed-URL access to archive source documents (private bucket, short-lived URLs; see ADR-0008).
   - name: Collections
     description: Curated groupings of videos (PERSON / TOPIC) and admin CRUD.
   - name: Favorites
@@ -441,13 +441,13 @@ paths:
       tags: [Documents]
       summary: Redirect to a time-limited Signed URL for a document
       description: >
-        Any authenticated user may fetch a signed URL for a published archive
-        document (archive content is public-after-login). Responds **302** with a
-        `Location` header pointing at a short-lived Supabase Signed URL; the browser
-        fetches the file bytes directly from storage. Unknown docIds return 404, and
-        the route is per-route rate-limited to deter enumeration.
-      security:
-        - cookieAuth: []
+        Public archive read — no login required (see ADR-0008), on par with the
+        public video reads. Responds **302** with a `Location` header pointing at a
+        short-lived Supabase Signed URL; the browser fetches the file bytes directly
+        from the (private) storage bucket. Only the ephemeral signed URL is public.
+        Unknown docIds return 404, and the route is per-route rate-limited
+        (30 / 60s) to deter enumeration of the unguessable UUID docIds.
+      security: []
       responses:
         '302':
           description: Redirect to the Supabase Signed URL.
@@ -457,8 +457,6 @@ paths:
               schema:
                 type: string
                 format: uri
-        '401':
-          $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
         '429':

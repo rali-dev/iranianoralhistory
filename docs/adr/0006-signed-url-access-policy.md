@@ -1,8 +1,16 @@
 # 6. Signed-URL access policy for private documents
 
-- Status: Accepted
+- Status: Superseded by [ADR-0008](./0008-public-signed-url-access.md)
 - Date: 2026-07-13
 - Deciders: Engineering
+
+> **Superseded (2026-07-14):** The "public-after-login" gate below was reversed.
+> Documents are now part of the fully public archive and are served **without
+> login** — identical to the public video embeds. The storage layer stays
+> private (short-lived Signed URLs only); enumeration resistance now rests on
+> unguessable UUID `docId`s, 404-on-unknown, and the per-route rate limit. See
+> [ADR-0008](./0008-public-signed-url-access.md) for the current policy. The
+> record below is kept verbatim as historical context.
 
 ## Context
 

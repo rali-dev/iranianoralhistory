@@ -239,7 +239,10 @@ Notes:
   `RolesGuard` are applied per route with `@UseGuards(...)` / `@Roles('ADMIN')`.
 - `JwtAuthGuard` reads the **access-token** cookie; the `/auth/refresh` route instead uses
   `JwtRefreshGuard`, which reads and verifies the **refresh-token** cookie.
-- Public reads (`GET /videos`, `GET /videos/:id`, `GET /collections`) carry no auth guard.
+- Public reads (`GET /videos`, `GET /videos/:id`, `GET /collections`,
+  `GET /documents/:docId/signed-url`) carry no auth guard. The document signed-url route is public
+  archive content (ADR-0008) and additionally keeps a tight per-route throttle (30/60s) plus
+  unguessable UUID `docId`s as its enumeration defense.
 
 ---
 

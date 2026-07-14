@@ -43,8 +43,9 @@ and any external client speak to.
 | [0003](./adr/0003-favorite-as-pass-through-not-aggregate.md) | `Favorite` as a pass-through join, not an aggregate |
 | [0004](./adr/0004-trilingual-content-as-columns.md) | Trilingual content as `De`/`En`/`Fa` columns |
 | [0005](./adr/0005-cookie-jwt-with-refresh-rotation.md) | Cookie-based JWT with refresh rotation |
-| [0006](./adr/0006-signed-url-access-policy.md) | Signed-URL access policy for private documents |
+| [0006](./adr/0006-signed-url-access-policy.md) | Signed-URL access policy for private documents _(superseded by 0008)_ |
 | [0007](./adr/0007-unit-of-work-for-multi-step-writes.md) | Unit-of-work (Prisma `$transaction`) for multi-step writes |
+| [0008](./adr/0008-public-signed-url-access.md) | Public signed-URL access for archive documents |
 
 ---
 

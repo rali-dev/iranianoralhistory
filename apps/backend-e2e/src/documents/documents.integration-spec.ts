@@ -160,14 +160,35 @@ describe('Documents (Integration)', () => {
   });
 
   // ─── GET /api/documents/:docId/signed-url ─────────────────────────────────
+  // Öffentliches Archiv: Signed-URLs werden — wie die Videos — OHNE Login
+  // ausgeliefert (kein JwtAuthGuard). Gäste und eingeloggte Nutzer erhalten den
+  // 302-Redirect; unbekannte docIds liefern 404 (nicht 401).
 
-  describe('GET /api/documents/:docId/signed-url', () => {
-    it('returns 401 without authentication (private bucket guard)', async () => {
+  describe('GET /api/documents/:docId/signed-url (public)', () => {
+    it('redirects (302) a GUEST (no auth) to the signed URL of an existing document', async () => {
+      const storagePath = 'documents/public-guest-access.pdf';
+      const createRes = await request(app.getHttpServer())
+        .post(`/api/videos/${videoId}/documents`)
+        .set('Cookie', adminCookies)
+        .send({ title: 'Public Guest Doc', storagePath });
+      const freshDocId = createRes.body.id as string;
+
       const res = await request(app.getHttpServer())
-        .get('/api/documents/any-doc-id/signed-url')
+        .get(`/api/documents/${freshDocId}/signed-url`)
         .redirects(0);
 
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(302);
+      expect(res.headers.location).toBe(stubbedSignedUrl(storagePath, 3600));
+
+      await prisma.document.delete({ where: { id: freshDocId } }).catch(() => null);
+    });
+
+    it('returns 404 (not 401) for an unknown document without authentication', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/documents/00000000-0000-0000-0000-000000000000/signed-url')
+        .redirects(0);
+
+      expect(res.status).toBe(404);
     });
 
     // Positivpfad: authentifiziert + existierendes Dokument → 302-Redirect auf
@@ -239,16 +260,42 @@ describe('Documents (Integration)', () => {
       expect(res.status).toBe(403);
     });
 
-    // Policy (bewusst): Signed-URLs sind NICHT admin-only — jeder authentifizierte
-    // Nutzer darf eine anfordern. Ein Nicht-Admin passiert also den JwtAuthGuard
-    // (kein 403) und erhält für ein unbekanntes Dokument 404 (nicht 401).
-    it('GET signed-url is allowed for any authenticated user — unknown doc → 404, not 401/403', async () => {
+    // Policy (bewusst): Signed-URLs sind öffentlich — weder Login noch Admin-Rolle
+    // nötig. Ein Nicht-Admin erhält daher (wie ein Gast) für ein unbekanntes
+    // Dokument 404 — kein 401/403.
+    it('GET signed-url is allowed for a non-admin user too — unknown doc → 404, not 401/403', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/documents/00000000-0000-0000-0000-000000000000/signed-url')
         .set('Cookie', userCookies)
         .redirects(0);
 
       expect(res.status).toBe(404);
+    });
+  });
+
+  // ─── Rate-Limit: Abuse-Schutz des jetzt ÖFFENTLICHEN Endpoints ────────────
+  // Da die Route ohne Login erreichbar ist, ist das enge Per-Route-Throttle
+  // (30/60s) die zentrale Bremse gegen docId-Enumeration. Dieser Test sichert,
+  // dass es erhalten bleibt — würde jemand @Throttle entfernen, fiele die Route
+  // still auf das globale 100/min zurück, ohne dass ein Test bricht. Läuft
+  // bewusst ZULETZT: er trippt den Zähler dieser Route für das restliche
+  // 60s-Fenster, daher isoliert am Dateiende.
+
+  describe('GET /api/documents/:docId/signed-url — rate limiting (public abuse guard)', () => {
+    it('throttles (429) once the per-route limit of guest requests is exceeded', async () => {
+      const server = app.getHttpServer();
+      const statuses: number[] = [];
+      // Route-Limit ist 30/60s. 31 Gast-Anfragen müssen mindestens einmal 429
+      // sehen. Ein unbekanntes (valide geformtes) docId genügt — der
+      // ThrottlerGuard zählt VOR dem Handler, unabhängig vom 404-Ergebnis.
+      for (let i = 0; i < 31; i++) {
+        const res = await request(server)
+          .get('/api/documents/00000000-0000-0000-0000-000000000000/signed-url')
+          .redirects(0);
+        statuses.push(res.status);
+      }
+
+      expect(statuses.filter((s) => s === 429).length).toBeGreaterThan(0);
     });
   });
 });
