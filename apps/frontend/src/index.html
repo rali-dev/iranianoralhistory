@@ -9,6 +9,27 @@
     />
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#FFFFCC" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1A1512" media="(prefers-color-scheme: dark)" />
+    <!-- Farbschema vor dem ersten Paint setzen (kein Flash of Light beim Night-Modus).
+         Muss mit ThemeService (STORAGE_KEY 'ioh-theme') übereinstimmen. -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('ioh-theme');
+          var theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia &&
+                window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

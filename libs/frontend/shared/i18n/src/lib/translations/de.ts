@@ -25,6 +25,11 @@ export const de = {
     FA: 'فا',
     LABEL: 'Sprache wählen',
   },
+  THEME: {
+    LABEL: 'Farbschema',
+    TO_DARK: 'Nachtmodus einschalten',
+    TO_LIGHT: 'Tagmodus einschalten',
+  },
   ARCHIVE: {
     TITLE: 'Videoarchiv',
     FAVORITES_TITLE: 'Beliebte Videos',

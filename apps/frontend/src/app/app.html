@@ -1,5 +1,5 @@
 <nav
-  class="ioh-nav fixed top-0 left-0 right-0 z-[100] h-[var(--ioh-nav-h)] flex items-center px-[clamp(1rem,4vw,3rem)] bg-white/95 backdrop-blur-[16px] [-webkit-backdrop-filter:blur(16px)] border-b border-[color-mix(in_srgb,var(--accent)_12%,transparent)] shadow-[0_1px_12px_var(--accent-glow-soft)]"
+  class="ioh-nav fixed top-0 left-0 right-0 z-[100] h-[var(--ioh-nav-h)] flex items-center px-[clamp(1rem,4vw,3rem)] bg-[var(--nav-bg)] backdrop-blur-[16px] [-webkit-backdrop-filter:blur(16px)] border-b border-[color-mix(in_srgb,var(--accent)_12%,transparent)] shadow-[0_1px_12px_var(--accent-glow-soft)]"
   [class.ioh-menu-open]="menuOpen()"
   role="navigation"
   [attr.aria-label]="i18n.t('NAV.ARCHIVE')"
@@ -24,17 +24,20 @@
         />
       </div>
       <span class="ioh-nav-mark font-[family-name:var(--font-display)] font-bold text-[1.35rem] text-[var(--accent)] tracking-[0.1em]">{{ i18n.t('NAV.BRAND_MARK') }}</span>
-      <span class="ioh-nav-name font-[family-name:var(--font-ui)] text-[1.08rem] font-normal text-black/50 tracking-normal">{{ i18n.t('NAV.BRAND_NAME') }}</span>
+      <span class="ioh-nav-name font-[family-name:var(--font-ui)] text-[1.08rem] font-normal text-[color-mix(in_srgb,var(--ink)_50%,transparent)] tracking-normal">{{ i18n.t('NAV.BRAND_NAME') }}</span>
     </a>
 
-    <!-- ── Right side: Sign In/Out | Menu ── -->
+    <!-- ── Right side: Theme | Sign In/Out | Menu ── -->
     <div class="flex gap-4 items-center max-[640px]:gap-[0.875rem] rtl:flex-row-reverse">
+
+      <!-- Day/Night toggle (auf allen Routen sichtbar) -->
+      <lib-theme-toggle />
 
       <!-- Sign In / Sign Out -->
       @if (isAuthenticated()) {
         <button
           type="button"
-          class="ioh-nav-btn-border ioh-auth-btn relative font-[family-name:var(--font-ui)] text-[0.9rem] font-medium tracking-[0.01em] text-black/65 bg-transparent px-5 h-[47px] cursor-pointer transition-[color,background] duration-200 hover:text-[#cc2200] focus-visible:text-[#cc2200] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[3px] inline-flex items-center whitespace-nowrap border-0"
+          class="ioh-nav-btn-border ioh-auth-btn relative font-[family-name:var(--font-ui)] text-[0.9rem] font-medium tracking-[0.01em] text-[color-mix(in_srgb,var(--ink)_65%,transparent)] bg-transparent px-5 h-[47px] cursor-pointer transition-[color,background] duration-200 hover:text-[#cc2200] focus-visible:text-[#cc2200] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[3px] inline-flex items-center whitespace-nowrap border-0"
           (click)="logout()"
           [attr.aria-label]="i18n.t('NAV.LOGOUT')"
         >
@@ -51,7 +54,7 @@
       <!-- Menu button -->
       <button
         type="button"
-        class="ioh-nav-btn-border relative inline-flex items-center gap-2 px-[1.05rem] h-[47px] bg-transparent text-black/65 cursor-pointer transition-[color,background] duration-200 hover:text-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[3px] border-0"
+        class="ioh-nav-btn-border relative inline-flex items-center gap-2 px-[1.05rem] h-[47px] bg-transparent text-[color-mix(in_srgb,var(--ink)_65%,transparent)] cursor-pointer transition-[color,background] duration-200 hover:text-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[3px] border-0"
         [class.text-\[var(--accent)\]]="menuOpen()"
         [class.bg-\[rgba\(127\,0\,0\,0\.06\)\]]="menuOpen()"
         (click)="toggleMenu()"
@@ -78,7 +81,7 @@
   <!-- ── Navigation Dropdown ── -->
   @if (menuOpen()) {
     <nav
-      class="ioh-nav-dropdown absolute top-[calc(100%+10px)] right-[clamp(1rem,4vw,3rem)] rtl:right-auto rtl:left-[clamp(1rem,4vw,3rem)] w-[386px] max-w-[calc(100vw-2rem)] bg-white/98 backdrop-blur-[24px] [-webkit-backdrop-filter:blur(24px)] border border-[color-mix(in_srgb,var(--accent)_13%,transparent)] border-t-2 border-t-[color-mix(in_srgb,var(--accent)_28%,transparent)] rounded-[10px] shadow-[0_8px_40px_rgba(0,0,0,0.12),0_2px_10px_rgba(0,0,0,0.07),0_0_0_1px_color-mix(in_srgb,var(--accent)_4%,transparent)] z-[99] overflow-hidden"
+      class="ioh-nav-dropdown absolute top-[calc(100%+10px)] right-[clamp(1rem,4vw,3rem)] rtl:right-auto rtl:left-[clamp(1rem,4vw,3rem)] w-[386px] max-w-[calc(100vw-2rem)] bg-[var(--nav-dropdown-bg)] backdrop-blur-[24px] [-webkit-backdrop-filter:blur(24px)] border border-[color-mix(in_srgb,var(--accent)_13%,transparent)] border-t-2 border-t-[color-mix(in_srgb,var(--accent)_28%,transparent)] rounded-[10px] shadow-[0_8px_40px_rgba(0,0,0,0.12),0_2px_10px_rgba(0,0,0,0.07),0_0_0_1px_color-mix(in_srgb,var(--accent)_4%,transparent)] z-[99] overflow-hidden"
       id="ioh-nav-dropdown"
       role="menu"
       [attr.aria-label]="i18n.t('NAV.MENU')"
@@ -89,7 +92,7 @@
 
           <!-- E-Mail + optional Admin-Badge -->
           <div
-            class="ioh-drop-item ioh-drop-item--info flex items-center gap-3 px-6 py-[1.05rem] font-[family-name:var(--font-ui)] text-[0.93rem] font-normal text-black/50 cursor-default bg-[color-mix(in_srgb,var(--accent)_3%,transparent)] rtl:flex-row-reverse"
+            class="ioh-drop-item ioh-drop-item--info flex items-center gap-3 px-6 py-[1.05rem] font-[family-name:var(--font-ui)] text-[0.93rem] font-normal text-[color-mix(in_srgb,var(--ink)_50%,transparent)] cursor-default bg-[color-mix(in_srgb,var(--accent)_3%,transparent)] rtl:flex-row-reverse"
             role="menuitem"
             aria-disabled="true"
           >
@@ -122,7 +125,7 @@
           <!-- Archive -->
           <a
             routerLink="/videos"
-            class="ioh-drop-item flex items-center gap-3 px-6 py-[0.9rem] font-[family-name:var(--font-ui)] text-[0.975rem] font-medium tracking-[0.01em] text-black/70 no-underline bg-transparent cursor-pointer transition-[background,color] duration-150 whitespace-nowrap w-full hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rtl:flex-row-reverse"
+            class="ioh-drop-item flex items-center gap-3 px-6 py-[0.9rem] font-[family-name:var(--font-ui)] text-[0.975rem] font-medium tracking-[0.01em] text-[color-mix(in_srgb,var(--ink)_70%,transparent)] no-underline bg-transparent cursor-pointer transition-[background,color] duration-150 whitespace-nowrap w-full hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rtl:flex-row-reverse"
             (click)="closeMenu()"
             role="menuitem"
           >
@@ -135,7 +138,7 @@
           <!-- Favorites -->
           <button
             type="button"
-            class="ioh-drop-item flex items-center gap-3 px-6 py-[0.9rem] font-[family-name:var(--font-ui)] text-[0.975rem] font-medium tracking-[0.01em] text-black/70 bg-transparent border-0 cursor-pointer transition-[background,color] duration-150 whitespace-nowrap w-full hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rtl:flex-row-reverse text-left"
+            class="ioh-drop-item flex items-center gap-3 px-6 py-[0.9rem] font-[family-name:var(--font-ui)] text-[0.975rem] font-medium tracking-[0.01em] text-[color-mix(in_srgb,var(--ink)_70%,transparent)] bg-transparent border-0 cursor-pointer transition-[background,color] duration-150 whitespace-nowrap w-full hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rtl:flex-row-reverse text-left"
             (click)="goToFavorites()"
             role="menuitem"
           >
@@ -151,7 +154,7 @@
           <!-- About RAIOH -->
           <a
             routerLink="/about"
-            class="ioh-drop-item flex items-center gap-3 px-6 py-[0.9rem] font-[family-name:var(--font-ui)] text-[0.975rem] font-medium tracking-[0.01em] text-black/70 no-underline bg-transparent cursor-pointer transition-[background,color] duration-150 whitespace-nowrap w-full hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rtl:flex-row-reverse"
+            class="ioh-drop-item flex items-center gap-3 px-6 py-[0.9rem] font-[family-name:var(--font-ui)] text-[0.975rem] font-medium tracking-[0.01em] text-[color-mix(in_srgb,var(--ink)_70%,transparent)] no-underline bg-transparent cursor-pointer transition-[background,color] duration-150 whitespace-nowrap w-full hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rtl:flex-row-reverse"
             (click)="closeMenu()"
             role="menuitem"
           >
@@ -166,7 +169,7 @@
           <!-- Guest: Archive + About -->
           <a
             routerLink="/videos"
-            class="ioh-drop-item flex items-center gap-3 px-6 py-[0.9rem] font-[family-name:var(--font-ui)] text-[0.975rem] font-medium tracking-[0.01em] text-black/70 no-underline bg-transparent cursor-pointer transition-[background,color] duration-150 whitespace-nowrap w-full hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rtl:flex-row-reverse"
+            class="ioh-drop-item flex items-center gap-3 px-6 py-[0.9rem] font-[family-name:var(--font-ui)] text-[0.975rem] font-medium tracking-[0.01em] text-[color-mix(in_srgb,var(--ink)_70%,transparent)] no-underline bg-transparent cursor-pointer transition-[background,color] duration-150 whitespace-nowrap w-full hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rtl:flex-row-reverse"
             (click)="closeMenu()"
             role="menuitem"
           >
@@ -178,7 +181,7 @@
 
           <a
             routerLink="/about"
-            class="ioh-drop-item flex items-center gap-3 px-6 py-[0.9rem] font-[family-name:var(--font-ui)] text-[0.975rem] font-medium tracking-[0.01em] text-black/70 no-underline bg-transparent cursor-pointer transition-[background,color] duration-150 whitespace-nowrap w-full hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rtl:flex-row-reverse"
+            class="ioh-drop-item flex items-center gap-3 px-6 py-[0.9rem] font-[family-name:var(--font-ui)] text-[0.975rem] font-medium tracking-[0.01em] text-[color-mix(in_srgb,var(--ink)_70%,transparent)] no-underline bg-transparent cursor-pointer transition-[background,color] duration-150 whitespace-nowrap w-full hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rtl:flex-row-reverse"
             (click)="closeMenu()"
             role="menuitem"
           >
@@ -197,7 +200,7 @@
 
           <button
             type="button"
-            class="ioh-drop-item flex items-center gap-3 px-6 py-[0.9rem] font-[family-name:var(--font-ui)] text-[0.975rem] font-medium tracking-[0.01em] text-black/70 bg-transparent border-0 cursor-pointer transition-[background,color,padding] duration-150 whitespace-nowrap w-full text-left hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rtl:flex-row-reverse"
+            class="ioh-drop-item flex items-center gap-3 px-6 py-[0.9rem] font-[family-name:var(--font-ui)] text-[0.975rem] font-medium tracking-[0.01em] text-[color-mix(in_srgb,var(--ink)_70%,transparent)] bg-transparent border-0 cursor-pointer transition-[background,color,padding] duration-150 whitespace-nowrap w-full text-left hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] focus-visible:bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rtl:flex-row-reverse"
             (click)="toggleLang()"
             [attr.aria-expanded]="langOpen()"
             aria-haspopup="listbox"
@@ -214,7 +217,7 @@
               [attr.dir]="activeLang().isFa ? 'rtl' : null"
             >{{ activeLang().label }}</span>
             <svg
-              class="flex-shrink-0 text-black/35 transition-transform duration-[0.22s] ease-[cubic-bezier(0.4,0,0.2,1)]"
+              class="flex-shrink-0 text-[color-mix(in_srgb,var(--ink)_35%,transparent)] transition-transform duration-[0.22s] ease-[cubic-bezier(0.4,0,0.2,1)]"
               [class.rotate-180]="langOpen()"
               [class.text-\[var(--accent)\]]="langOpen()"
               width="10" height="10" viewBox="0 0 8 8" fill="none" aria-hidden="true"
@@ -232,7 +235,7 @@
               @for (lang of langs; track lang.code) {
                 <button
                   type="button"
-                  class="flex items-center gap-3 px-[1.95rem] py-[0.75rem] w-full font-[family-name:var(--font-ui)] text-[0.96rem] font-medium text-black/60 bg-transparent border-0 border-t border-black/[0.04] first:border-t-0 cursor-pointer transition-[background,color] duration-150 text-left hover:bg-[var(--accent-glow-soft)] hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] rtl:flex-row-reverse rtl:text-right"
+                  class="flex items-center gap-3 px-[1.95rem] py-[0.75rem] w-full font-[family-name:var(--font-ui)] text-[0.96rem] font-medium text-[color-mix(in_srgb,var(--ink)_60%,transparent)] bg-transparent border-0 border-t border-[color-mix(in_srgb,var(--ink)_4%,transparent)] first:border-t-0 cursor-pointer transition-[background,color] duration-150 text-left hover:bg-[var(--accent-glow-soft)] hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[-2px] rtl:flex-row-reverse rtl:text-right"
                   [class.text-\[var(--accent)\]]="lang.code === i18n.lang()"
                   [class.font-semibold]="lang.code === i18n.lang()"
                   [class.bg-\[rgba\(127\,0\,0\,0\.03\)\]]="lang.code === i18n.lang()"
@@ -322,16 +325,16 @@
 
 @if (isHomePage()) {
   <div
-    class="mt-[var(--ioh-nav-h)] bg-white py-[0.875rem] pb-4"
+    class="mt-[var(--ioh-nav-h)] bg-[var(--surface-raised)] py-[0.875rem] pb-4"
     [dir]="i18n.isRtl() ? 'rtl' : 'ltr'"
   >
     <div class="relative mx-[25%] w-1/2 overflow-hidden shadow-[0_2px_18px_var(--accent-glow),0_0_0_4px_color-mix(in_srgb,var(--accent)_4%,transparent)] ioh-spin-border ioh-spin-border-fast max-[960px]:mx-3 max-[960px]:w-[calc(100%-24px)]">
       <img
         src="assets/images/Banne.jpg"
-        class="block w-full h-auto max-h-[86px] object-contain bg-[#FFFFCC]"
+        class="block w-full h-auto max-h-[86px] object-contain bg-[var(--banner-bg)]"
         alt="Iranische Oral History – انجمن مطالعات تاریخ شفاهی ایران – Berlin"
       />
-      <div class="bg-[#FFFFCC] py-[0.45rem] px-4 text-center border-t border-[color-mix(in_srgb,var(--accent)_14%,transparent)]">
+      <div class="bg-[var(--banner-bg)] py-[0.45rem] px-4 text-center border-t border-[color-mix(in_srgb,var(--accent)_14%,transparent)]">
         <span class="font-[family-name:var(--font-ui)] text-[clamp(0.72rem,1.4vw,0.82rem)] text-[var(--accent)] font-bold tracking-[0.01em] leading-[1.4] rtl:font-[family-name:var(--font-fa-display)] rtl:text-[clamp(0.9rem,1.8vw,1rem)] rtl:tracking-normal rtl:font-bold">{{ i18n.t('BANNER.SUBTITLE') }}</span>
       </div>
     </div>

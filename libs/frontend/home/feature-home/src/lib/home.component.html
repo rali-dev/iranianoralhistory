@@ -14,7 +14,7 @@
       @for (word of heroWords(); track $index; let last = $last) {
         <span class="hero-word inline-block mr-[0.2em] pb-[0.08em]" [class.text-\[var(--accent)\]]="last">{{ word }}</span>
       }
-      <span class="hero-heading-logo-wrap ioh-spin-border inline-block relative rounded-full overflow-hidden align-middle ms-[0.2em] h-[143px] w-[143px] flex-shrink-0 bg-white">
+      <span class="hero-heading-logo-wrap ioh-spin-border inline-block relative rounded-full overflow-hidden align-middle ms-[0.2em] h-[143px] w-[143px] flex-shrink-0 bg-[var(--logo-plate)]">
         <img
           class="block w-full h-full object-contain rounded-full opacity-[0.88]"
           src="assets/brand/RAIOH_OB.png"
@@ -33,7 +33,7 @@
     <p class="hero-subtitle text-[clamp(0.95rem,2vw,1.2rem)] text-[var(--text-secondary)] leading-[1.75] max-w-[580px] mb-10 max-[768px]:max-w-full max-[600px]:mb-8">{{ i18n.t('HOME.HERO_SUBTITLE') }}</p>
 
     <div class="hero-cta flex flex-wrap gap-4 max-[480px]:flex-col max-[480px]:items-start">
-      <a routerLink="/videos" class="ioh-btn-border bg-white border border-[color-mix(in_srgb,var(--accent)_12%,transparent)] shadow-[0_2px_16px_color-mix(in_srgb,var(--accent)_5%,transparent)] inline-flex items-center gap-[0.6rem] px-7 py-[0.875rem] font-[family-name:var(--font-ui)] text-[0.8125rem] tracking-[0.01em] no-underline cursor-pointer min-h-[44px] transition-[background] duration-200 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[3px]">
+      <a routerLink="/videos" class="ioh-btn-border bg-[var(--surface-raised)] border border-[color-mix(in_srgb,var(--accent)_12%,transparent)] shadow-[0_2px_16px_color-mix(in_srgb,var(--accent)_5%,transparent)] inline-flex items-center gap-[0.6rem] px-7 py-[0.875rem] font-[family-name:var(--font-ui)] text-[0.8125rem] tracking-[0.01em] no-underline cursor-pointer min-h-[44px] transition-[background] duration-200 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[3px]">
         {{ i18n.t('HOME.HERO_CTA') }}
         <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
           <path d="M224.49,136.49l-72,72a12,12,0,0,1-17-17L187,140H40a12,12,0,0,1,0-24H187L135.51,64.48a12,12,0,0,1,17-17l72,72A12,12,0,0,1,224.49,136.49Z"/>
@@ -101,7 +101,7 @@
       </h2>
       <p class="text-[var(--text-secondary)] text-[clamp(1rem,2vw,1.1rem)] leading-[1.8] m-0">{{ i18n.t('HOME.ABOUT_P1') }}</p>
       <p class="text-[var(--text-secondary)] text-[clamp(1rem,2vw,1.1rem)] leading-[1.8] m-0">{{ i18n.t('HOME.ABOUT_P2') }}</p>
-      <a routerLink="/videos" class="inline-flex items-center gap-2 bg-white px-3 py-1.5 rounded-[6px] border border-[color-mix(in_srgb,var(--accent)_12%,transparent)] shadow-[0_2px_16px_color-mix(in_srgb,var(--accent)_5%,transparent)] text-[var(--accent)] font-[family-name:var(--font-ui)] text-[0.8125rem] tracking-[0.01em] no-underline transition-[gap] duration-200 hover:gap-3 hover:text-[#cc2200] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[3px]">
+      <a routerLink="/videos" class="inline-flex items-center gap-2 bg-[var(--surface-raised)] px-3 py-1.5 rounded-[6px] border border-[color-mix(in_srgb,var(--accent)_12%,transparent)] shadow-[0_2px_16px_color-mix(in_srgb,var(--accent)_5%,transparent)] text-[var(--accent)] font-[family-name:var(--font-ui)] text-[0.8125rem] tracking-[0.01em] no-underline transition-[gap] duration-200 hover:gap-3 hover:text-[#cc2200] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[3px]">
         {{ i18n.t('HOME.ABOUT_LINK') }}
         <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
           <path d="M224.49,136.49l-72,72a12,12,0,0,1-17-17L187,140H40a12,12,0,0,1,0-24H187L135.51,64.48a12,12,0,0,1,17-17l72,72A12,12,0,0,1,224.49,136.49Z"/>
@@ -165,7 +165,7 @@
     </h2>
     <p class="text-[clamp(1rem,2vw,1.15rem)] text-[var(--text-secondary)] max-w-[480px] mx-auto">{{ i18n.t('HOME.CTA_TEXT') }}</p>
     <div class="flex justify-center">
-      <a routerLink="/videos" class="ioh-btn-border bg-white border border-[color-mix(in_srgb,var(--accent)_12%,transparent)] shadow-[0_2px_16px_color-mix(in_srgb,var(--accent)_5%,transparent)] inline-flex items-center gap-[0.6rem] px-9 py-[1.1rem] font-[family-name:var(--font-ui)] text-[0.8rem] tracking-[0.01em] no-underline cursor-pointer min-h-[44px] transition-[background] duration-200 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[3px]">
+      <a routerLink="/videos" class="ioh-btn-border bg-[var(--surface-raised)] border border-[color-mix(in_srgb,var(--accent)_12%,transparent)] shadow-[0_2px_16px_color-mix(in_srgb,var(--accent)_5%,transparent)] inline-flex items-center gap-[0.6rem] px-9 py-[1.1rem] font-[family-name:var(--font-ui)] text-[0.8rem] tracking-[0.01em] no-underline cursor-pointer min-h-[44px] transition-[background] duration-200 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-[3px]">
         {{ i18n.t('HOME.CTA_BUTTON') }}
         <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
           <path d="M224.49,136.49l-72,72a12,12,0,0,1-17-17L187,140H40a12,12,0,0,1,0-24H187L135.51,64.48a12,12,0,0,1,17-17l72,72A12,12,0,0,1,224.49,136.49Z"/>
@@ -181,7 +181,7 @@
     <div class="flex items-center gap-3 max-[480px]:flex-wrap max-[480px]:gap-2">
       <span class="font-[family-name:var(--font-ui)] text-[1.1rem] font-bold text-[var(--accent)] tracking-[0.01em]">RAIOH</span>
       <span class="text-[0.85rem] text-[var(--text-muted)] max-[640px]:hidden">{{ i18n.t('HOME.FOOTER_BRAND') }}</span>
-      <span class="font-[family-name:var(--font-mono)] text-[0.68rem] text-black/35 tracking-[0.06em]">{{ i18n.t('HOME.FOOTER_SINCE') }}</span>
+      <span class="font-[family-name:var(--font-mono)] text-[0.68rem] text-[color-mix(in_srgb,var(--ink)_35%,transparent)] tracking-[0.06em]">{{ i18n.t('HOME.FOOTER_SINCE') }}</span>
     </div>
   </div>
 </footer>

@@ -60,6 +60,7 @@ describe('App', () => {
     favoritesStore.setIds([]);
     document.documentElement.lang = '';
     document.documentElement.dir = '';
+    document.documentElement.removeAttribute('data-theme');
   });
 
   describe('creation & rendering', () => {
@@ -82,6 +83,15 @@ describe('App', () => {
       fixture.detectChanges();
 
       expect(fixture.nativeElement.querySelector('router-outlet')).toBeTruthy();
+    });
+
+    it('renders the global day/night theme toggle in the nav', async () => {
+      const { fixture } = await createComponent();
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('lib-theme-toggle')).toBeTruthy();
+      expect(el.querySelector('button.ioh-theme-toggle')).toBeTruthy();
     });
   });
 

@@ -27,6 +27,11 @@ export const fa: typeof de = {
     FA: 'فا',
     LABEL: 'انتخاب زبان',
   },
+  THEME: {
+    LABEL: 'پوسته',
+    TO_DARK: 'روشن کردن حالت شب',
+    TO_LIGHT: 'روشن کردن حالت روز',
+  },
   ARCHIVE: {
     TITLE: 'آرشیو ویدیو',
     FAVORITES_TITLE: 'ویدیوهای مورد علاقه',

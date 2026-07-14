@@ -8,10 +8,13 @@ import {
 } from '@iranianoralhistory/frontend-identity-data-access';
 import { favoritesStore } from '@iranianoralhistory/frontend-video-data-access';
 import { I18nService, type Lang } from '@iranianoralhistory/frontend-shared-i18n';
-import { ImageLightboxService } from '@iranianoralhistory/frontend-shared-ui';
+import {
+  ImageLightboxService,
+  ThemeToggleComponent,
+} from '@iranianoralhistory/frontend-shared-ui';
 
 @Component({
-  imports: [RouterOutlet, RouterLink],
+  imports: [RouterOutlet, RouterLink, ThemeToggleComponent],
   selector: 'app-root',
   templateUrl: './app.html',
 })

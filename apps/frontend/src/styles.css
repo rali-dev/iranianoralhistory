@@ -121,6 +121,17 @@
     --text-muted:     #777777;
     --border:       rgba(0, 0, 0, 0.08);
     --border-light: rgba(0, 0, 0, 0.14);
+    /* ── App-Shell-Flächen-Tokens — Light-Werte == aktuelles UI 1:1 ──────
+       Ersetzen die zuvor hartcodierten Nav-/Footer-/Karten-Farben, sodass die
+       öffentliche Shell auf den Night-Modus reagiert, ohne den Day-Modus auch
+       nur um ein Pixel zu verändern. */
+    --ink: #000000;                                 /* Basis-Vordergrund für color-mix-Opazitäten (Nav/Footer) */
+    --surface-raised: #FFFFFF;                      /* erhöhte Flächen: Buttons, Katalog-Header (war bg-white) */
+    --logo-plate: #FFFFFF;                          /* runde Plättchen hinter dem RAIOH-Emblem */
+    --nav-bg: rgba(255, 255, 255, 0.95);            /* fixierte Nav-Leiste (war bg-white/95) */
+    --nav-dropdown-bg: rgba(255, 255, 255, 0.98);   /* Nav-Dropdown-Panel (war bg-white/98) */
+    --banner-bg: #FFFFCC;                           /* Startseiten-Banner-Plättchen (war #FFFFCC) */
+    color-scheme: light;
     --font-display:    'Cinzel', 'Times New Roman', serif;
     --font-body:       'Crimson Pro', 'Georgia', serif;
     --font-ui:         'Inter', system-ui, -apple-system, sans-serif;
@@ -129,6 +140,49 @@
     --font-mono:       'JetBrains Mono', 'Courier New', monospace;
     --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
     animation: nav-border-spin 4s linear infinite;
+  }
+
+  /* ── Night-Modus (2. Variante) — reiner Token-Override ───────────────────
+     Gleiche Struktur & gleiche Farbfamilie wie der Day-Modus: der Bordeaux-
+     Akzent (#7F0000/#A30000) wird für dunkle Flächen zu einer lesbaren
+     Bordeaux-Rose gehoben, das warme Creme (#FFFFCC) zu einem tiefen, warmen
+     Anthrazit übersetzt. Jede Fläche, die var(--…) nutzt, kippt automatisch —
+     es gibt keine parallele Farblogik in den Komponenten. */
+  [data-theme="dark"] {
+    --bg-deep:     #141010;
+    --page-bg:     #1A1512;   /* globaler Seiten-/Viewport-Hintergrund (Body + Admin-Shell) */
+    --bg-primary:  #1F1915;
+    --bg-card:     #241D19;
+    --bg-surface:  #2A211C;
+    --bg-elevated: #322620;
+
+    --accent:           #D65D57;   /* gehobenes Bordeaux — lesbar auf dunkel, trägt weißen Text */
+    --accent-light:     #E4726B;
+    --accent-glow:      rgba(214, 93, 87, 0.16);
+    --accent-glow-soft: rgba(214, 93, 87, 0.10);
+    --accent-border:    rgba(214, 93, 87, 0.32);
+
+    --danger:        #D65E52;
+    --danger-fg:     #F0897E;
+    --danger-bg:     #2A1A17;
+    --danger-border: rgba(214, 94, 82, 0.35);
+
+    --text-primary:   #F3ECE6;   /* warmes Near-White statt reinem Weiß */
+    --text-secondary: #CABFB7;
+    --text-muted:     #968B82;
+
+    --border:       rgba(245, 239, 234, 0.10);
+    --border-light: rgba(245, 239, 234, 0.17);
+
+    /* App-Shell */
+    --ink: #F5EFEA;
+    --surface-raised: #26201B;
+    --logo-plate: #F4EEE7;                       /* warmes Off-White — Emblem bleibt lesbar */
+    --nav-bg: rgba(22, 17, 14, 0.90);
+    --nav-dropdown-bg: rgba(28, 22, 18, 0.98);
+    --banner-bg: #241E13;
+
+    color-scheme: dark;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -150,6 +204,22 @@
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
     margin: 0;
+    transition: background-color 0.45s var(--ease-out), color 0.45s var(--ease-out);
+  }
+
+  /* Sanfter, einmaliger Ganzseiten-Übergang beim Umschalten (Klasse wird von
+     der ThemeToggleComponent für ~480 ms auf <html> gesetzt). Universell, aber
+     zeitlich begrenzt — kein Dauer-Transition-Overhead im Normalbetrieb. */
+  @media (prefers-reduced-motion: no-preference) {
+    html.theme-anim,
+    html.theme-anim *,
+    html.theme-anim *::before,
+    html.theme-anim *::after {
+      transition: background-color 0.45s var(--ease-out),
+                  border-color 0.45s var(--ease-out),
+                  color 0.45s var(--ease-out),
+                  fill 0.45s var(--ease-out) !important;
+    }
   }
 
   [lang="fa"], [dir="rtl"] {
@@ -535,6 +605,38 @@
   @media (max-width: 600px) { .ioh-nav-mark { display: none; } }
 
   /* ═══════════════════════════════════════════════════════════════
+     THEME (Day/Night) toggle — Sonne ⇄ Halbmond
+     Rein CSS-gesteuert über den [data-theme]-Vorfahren; die Komponente
+     hält nur Zustand & ARIA. Respektiert prefers-reduced-motion.
+  ═══════════════════════════════════════════════════════════════ */
+  .ioh-theme-toggle__icon { position: relative; display: block; width: 22px; height: 22px; }
+  .ioh-theme-toggle__icon > svg {
+    position: absolute; inset: 0; width: 22px; height: 22px;
+    transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+  }
+  .ioh-theme-toggle__sun  { opacity: 1; transform: rotate(0deg)   scale(1);    }
+  .ioh-theme-toggle__moon { opacity: 0; transform: rotate(-70deg) scale(0.35); }
+  [data-theme="dark"] .ioh-theme-toggle__sun  { opacity: 0; transform: rotate(70deg) scale(0.35); }
+  [data-theme="dark"] .ioh-theme-toggle__moon { opacity: 1; transform: rotate(0deg)  scale(1);    }
+  @media (prefers-reduced-motion: reduce) {
+    .ioh-theme-toggle__icon > svg { transition: opacity 0.01s linear; }
+  }
+
+  /* ── Night-Modus: punktuelle Overrides für hell hartcodierte Reste ── */
+  [data-theme="dark"] .ioh-auth-input:-webkit-autofill,
+  [data-theme="dark"] .ioh-auth-input:-webkit-autofill:hover {
+    -webkit-box-shadow: 0 0 0 1000px #2A2320 inset;   /* = Karte + Akzent-Glow, deckend (dunkel) */
+  }
+  [data-theme="dark"] .ioh-auth-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #2A2320 inset, 0 0 0 3px var(--accent-glow);
+  }
+  [data-theme="dark"] .admin-alert--success {
+    background: color-mix(in srgb, #27ae60 14%, transparent);
+    border-color: #27ae60;
+    color: #6FD79A;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
      CATALOG — filter dropdown (open/close transition + chevron)
   ═══════════════════════════════════════════════════════════════ */
   .filter-dropdown { position: relative; display: inline-block; }
@@ -609,7 +711,7 @@
     outline: none; transition: border-color 0.22s, box-shadow 0.22s, background 0.22s;
   }
   .catalog-search__input::placeholder { color: var(--text-muted); font-weight: 400; }
-  .catalog-search__input:focus { border-color: var(--accent-border); background: #fff; box-shadow: 0 0 0 3px var(--accent-glow); }
+  .catalog-search__input:focus { border-color: var(--accent-border); background: var(--surface-raised); box-shadow: 0 0 0 3px var(--accent-glow); }
   .catalog-search--has-value .catalog-search__input { padding-inline-end: 7rem; }
   .catalog-search__end { position: absolute; inset-inline-end: 0.625rem; display: flex; align-items: center; gap: 0.375rem; animation: search-end-in 0.16s cubic-bezier(0.4,0,0.2,1); }
   .catalog-search__count { font-family: var(--font-ui); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.02em; color: var(--text-muted); background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 999px; padding: 0.125rem 0.5rem; white-space: nowrap; line-height: 1.6; min-width: 1.75rem; text-align: center; }
@@ -628,7 +730,7 @@
   .video-card:hover .video-card__play { opacity: 1; }
   .video-card__thumb { position: relative; aspect-ratio: 16/9; overflow: hidden; background: var(--bg-surface); }
   .video-card__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s var(--ease-out,cubic-bezier(.22,1,.36,1)); }
-  .video-card__placeholder-logo { width: 100%; height: 100%; object-fit: contain !important; padding: 18px; background: #fff; transform: none !important; }
+  .video-card__placeholder-logo { width: 100%; height: 100%; object-fit: contain !important; padding: 18px; background: var(--logo-plate); transform: none !important; }
   .video-card__play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(127,0,0,0.35); opacity: 0; transition: opacity 0.2s ease; color: #fff; }
   .video-card__body { padding: 1.25rem; }
   .video-card__title { font-family: var(--font-ui); font-size: 0.9375rem; font-weight: 600; color: var(--text-primary); margin: 0 0 0.75rem; line-height: 1.45; letter-spacing: -0.01em; }
@@ -658,7 +760,7 @@
   .video-list-item:hover .video-list-item__play { opacity: 1; }
   .video-list-item__thumb { position: relative; width: 115px; height: 64px; flex-shrink: 0; overflow: hidden; background: var(--bg-surface); }
   .video-list-item__thumb img { width: 100%; height: 100%; object-fit: cover; }
-  .video-list-item__placeholder-logo { width: 100%; height: 100%; object-fit: contain; padding: 4px; background: #fff; }
+  .video-list-item__placeholder-logo { width: 100%; height: 100%; object-fit: contain; padding: 4px; background: var(--logo-plate); }
   .video-list-item__play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(127,0,0,0.3); opacity: 0; transition: opacity 0.2s; color: #fff; }
   .video-list-item__info { flex: 1; min-width: 0; padding: 0.625rem 0; }
   .video-list-item__title { font-family: var(--font-ui); font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin: 0 0 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
