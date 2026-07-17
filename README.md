@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/rali-dev/iranianoralhistory/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/rali-dev/iranianoralhistory/actions/workflows/ci.yml)
 
+**🌐 Live demo → [iranianoralhistory.vercel.app](https://iranianoralhistory.vercel.app)**
+
 A public digital archive of oral-history **video interviews** with associated documents,
 organized into curated collections and presented **trilingually** in German, English and
 Farsi. Visitors can browse the catalog and open documents without an account; registered
