@@ -1,0 +1,73 @@
+# ci.yml — Continuous-Integration-Gate für das Iranian-Oral-History NX-Monorepo.
+#
+# Läuft bei JEDEM Push auf `main` und bei JEDEM Pull Request gegen `main`.
+# Führt Lint + Unit-Tests + Build nur für die vom Diff betroffenen ("affected")
+# Projekte aus — schnell und hermetisch: keine DB, keine Secrets, kein Browser.
+#
+# Die E2E-Tests (Playwright frontend-e2e + backend-e2e) laufen hier BEWUSST NICHT.
+# Sie brauchen eine echte Postgres-DB, alle .env-Secrets und die laufende App und
+# gehören deshalb in einen eigenen, späteren Workflow — nicht ins schnelle Gate.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Läuft für denselben Branch/PR ein neuer Commit ein, wird der noch laufende
+# ältere Lauf abgebrochen — spart CI-Minuten und liefert schneller ein aktuelles
+# Ergebnis.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Minimale Rechte: Code lesen + Workflow-Historie lesen. nx-set-shas ermittelt aus
+# der Historie den letzten erfolgreichen Lauf auf `main` als Vergleichsbasis.
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  lint-test-build:
+    name: Lint · Test · Build (affected)
+    runs-on: ubuntu-latest
+    steps:
+      # fetch-depth: 0 => volle Git-Historie, damit `nx affected` und nx-set-shas
+      # den Basis-Commit für den Diff-Vergleich überhaupt finden.
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Node 22 einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22 # identisch zu render.yaml (Angular-21-Toolchain: ^20.19 || ^22.12 || ^24)
+          cache: npm
+
+      # 'npm install', NICHT 'npm ci': die unter Windows erzeugte package-lock.json
+      # ist nicht streng deckungsgleich — 'npm ci' bricht mit "Missing ... from lock
+      # file" ab (siehe render.yaml). 'npm install' löst den Baum auf dem Linux-Runner
+      # tolerant auf. --include=dev sichert die devDependencies (nx/eslint/jest/prisma).
+      - name: Abhängigkeiten installieren
+        run: npm install --include=dev --no-audit --no-fund
+
+      # Prisma-Client generieren (Schema -> Client). Verbindet sich NICHT zur DB,
+      # wird aber zum Kompilieren und Testen des Backends gebraucht.
+      - name: Prisma-Client generieren
+        run: npm run db:generate
+
+      # Ermittelt NX_BASE / NX_HEAD (Diff-Basis) robust für Push UND PR und legt sie
+      # als Umgebungsvariablen ab, die `nx affected` automatisch liest.
+      - name: Nx-Diff-Basis setzen
+        uses: nrwl/nx-set-shas@v4
+
+      - name: Lint (affected)
+        run: npx nx affected -t lint
+
+      - name: Unit-Tests (affected)
+        run: npx nx affected -t test
+
+      - name: Build (affected)
+        run: npx nx affected -t build
