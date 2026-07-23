@@ -110,7 +110,7 @@ npx nx serve frontend     # Angular dev server on http://localhost:4200
 | `CORS_ORIGINS` | Allowed frontend origins (comma-separated) |
 
 The full production setup (Supabase → Render → Vercel, including the same-origin cookie
-proxy) is documented step by step in [DEPLOYMENT.md](DEPLOYMENT.md).
+proxy) is documented step by step in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Testing
 
